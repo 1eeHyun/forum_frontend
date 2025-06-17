@@ -1,8 +1,23 @@
-const postRoutes = {
-    BASE: "/posts",
-    DETAIL: (id) => `/posts/${id}`,
-    LIKE: (id) => `/posts/${id}/like`,
-  };
+export const POST_ROUTES = {
+
+    FETCH_PAGINATED: { method: "GET", url: "/posts" },
+    CREATE: { method: "POST", url: "/posts" },
+    UPLOAD_IMAGE: { method: "POST", url: "/posts/images" },
   
-  export default postRoutes;
+    DETAIL: (postId) => ({ method: "GET", url: `/posts/${postId}` }),
+    UPDATE: (postId) => ({ method: "PUT", url: `/posts/${postId}` }),
+    DELETE: (postId) => ({ method: "DELETE", url: `/posts/${postId}` }),
+  
+    LIKE: (postId) => ({ method: "POST", url: `/posts/${postId}/likes` }),
+    LIKE_COUNT: (postId) => ({ method: "GET", url: `/posts/${postId}/likes` }),
+    LIKE_USERS: (postId) => ({ method: "GET", url: `/posts/${postId}/likes/users` }),
+  
+    BOOKMARK: (postId) => ({ method: "POST", url: `/posts/${postId}/bookmark` }),
+    REPORT: (postId) => ({ method: "POST", url: `/posts/${postId}/report` }),
+  
+    RELATED: (postId) => ({ method: "GET", url: `/posts/${postId}/related` }),
+    MY_COMMUNITY_RECENT: { method: "GET", url: "/posts/my-communities/recent" },
+    TOP_WEEKLY: { method: "GET", url: "/posts/top-weekly" },
+    RECENTLY_VIEWED: { method: "GET", url: "/posts/recent" },
+  };
   
