@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "@/*": ["src/*"],
+        "@auth/*": ["src/features/auth/*"],
+        "@community/*": ["src/features/community/*"],
+        "@home/*": ["src/features/home/*"],
+        "@post/*": ["src/features/post/*"],
+        "@profile/*": ["src/features/profile/*"],
+        "@routes/*": ["src/routes/*"]
+      }
+    },
+    "include": ["src"]
+  }
+  
