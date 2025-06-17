@@ -1,6 +1,7 @@
-import PostCard from "./PostCard";
+import PostCard from "./postcard/PostCard";
 
 export default function PostList({ posts }) {
+  
   if (!posts?.length) {
     return <p className="text-gray-400">No posts found.</p>;
   }
