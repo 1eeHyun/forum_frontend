@@ -2,6 +2,9 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
+import { ROUTES } from "@/constants/apiRoutes/routes";
+import { POST_LABELS } from "@/constants/labels/postLabels";
+
 export default function TopPostCard({ post, fromCommunity = false }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -21,12 +24,12 @@ export default function TopPostCard({ post, fromCommunity = false }) {
 
   const openProfile = (e) => {
     e.stopPropagation();
-    navigate(`/profile/${post.author?.username}`);
+    navigate(ROUTES.PROFILE(post.author?.username));
   };
 
   const openCommunity = (e) => {
     e.stopPropagation();
-    navigate(`/communities/${post.communityId}`);
+    navigate(ROUTES.COMMUNITY(post.communityId));
   };
 
   return (
@@ -68,7 +71,7 @@ export default function TopPostCard({ post, fromCommunity = false }) {
           {fromCommunity ? (
             <>
               <img
-                src={authorImage || "/default-profile.jpg"}
+                src={authorImage}
                 alt="author"
                 onClick={openProfile}
                 className="w-6 h-6 rounded-full object-cover border border-card hover:ring-2 hover:ring-primary transition cursor-pointer"
@@ -83,7 +86,7 @@ export default function TopPostCard({ post, fromCommunity = false }) {
           ) : (
             <>
               <img
-                src={communityImage || "/assets/default-community.jpg"}
+                src={communityImage}
                 alt="community"
                 onClick={openCommunity}
                 className="w-6 h-6 rounded-full object-cover border border-card hover:ring-2 hover:ring-primary transition cursor-pointer"
@@ -98,14 +101,14 @@ export default function TopPostCard({ post, fromCommunity = false }) {
                 onClick={openProfile}
                 className="text-xs hover:underline hover:text-primary cursor-pointer transition"
               >
-                • {post.author?.nickname}
+                {POST_LABELS.AUTHOR_PREFIX} {post.author?.nickname}
               </span>
             </>
           )}
         </div>
 
         <div className="mt-0.5 font-semibold text-black dark:text-white line-clamp-1 text-sm">
-          {post.title || "(No title)"}
+          {post.title || POST_LABELS.NO_TITLE}
         </div>
 
         {post.content && (
@@ -115,8 +118,8 @@ export default function TopPostCard({ post, fromCommunity = false }) {
         )}
 
         <div className="text-xs text-muted mt-2 flex gap-4">
-          <span>{post.likeCount ?? 0} likes</span>
-          <span>{post.commentCount ?? 0} comments</span>
+          <span>{post.likeCount ?? 0} {POST_LABELS.LIKES}</span>
+          <span>{post.commentCount ?? 0} {POST_LABELS.COMMENTS}</span>
         </div>
       </div>
     </div>

@@ -11,6 +11,10 @@ import {
 import axios from "@/api/axios";
 import { useEffect, useState } from "react";
 import { getViewedPostIds } from "@/utils/recentViews";
+import { POSTS } from "@/constants/apiRoutes/posts";
+import { HOME_SIDEBAR_SECTION_TITLES, BUTTON_LABELS } from "@/constants/labels/sidebarLabels";
+import { STORAGE_KEYS } from "@/constants/storageKeys";
+import { ERROR_MESSAGES } from "@/constants/errorMessages";
 
 export default function HomeRightSidebar() {
   const [topPosts, setTopPosts] = useState([]);
@@ -21,32 +25,36 @@ export default function HomeRightSidebar() {
   useEffect(() => {
     fetchRecentPostsFromMyCommunities()
       .then((res) => setRecentCommunityPosts(res.data.data))
-      .catch((err) => console.error("Failed to fetch recent community posts", err));
+      .catch((err) =>
+        console.error(ERROR_MESSAGES.FETCH_RECENT_COMMUNITY, err)
+      );
   }, []);
 
   // Weekly top posts
   useEffect(() => {
     fetchTopPostsThisWeek()
       .then((res) => setTopPosts(res.data.data))
-      .catch((err) => console.error("Failed to fetch top posts", err));
+      .catch((err) => console.error(ERROR_MESSAGES.FETCH_TOP_WEEKLY, err));
   }, []);
 
-  // Recently viewed posts
+  // Recently viewed posts (with token or localStorage)
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
 
     if (token) {
       fetchRecentViewedPosts()
         .then((res) => setRecentViewedPosts(res.data.data))
-        .catch((err) => console.error("Failed to fetch recently viewed posts", err));
+        .catch((err) =>
+          console.error(ERROR_MESSAGES.FETCH_RECENT_VIEWED, err)
+        );
     } else {
       const ids = getViewedPostIds();
       if (ids.length > 0) {
         axios
-          .get(`/posts/recent?localIds=${ids.join(",")}`)
+          .get(`${POSTS.RECENTLY_VIEWED.url}?localIds=${ids.join(",")}`)
           .then((res) => setRecentViewedPosts(res.data.data))
           .catch((err) =>
-            console.error("Failed to fetch recent posts from localStorage", err)
+            console.error(ERROR_MESSAGES.FETCH_RECENT_LOCAL, err)
           );
       }
     }
@@ -56,10 +64,10 @@ export default function HomeRightSidebar() {
     <div className="space-y-5 h-full">
       {recentCommunityPosts?.length > 0 && (
         <SidebarCardWrapper
-          title="COMMUNITY RECENT POSTS"
+          title={HOME_SIDEBAR_SECTION_TITLES.COMMUNITY_RECENT_POSTS}
           action={
             <button className="text-primary text-xs hover:underline">
-              Clear
+              {BUTTON_LABELS.CLEAR}
             </button>
           }
         >
@@ -70,7 +78,7 @@ export default function HomeRightSidebar() {
       )}
 
       {topPosts.length > 0 && (
-        <SidebarCardWrapper title="TOP 5 POSTS THIS WEEK">
+        <SidebarCardWrapper title={HOME_SIDEBAR_SECTION_TITLES.TOP_POSTS_THIS_WEEK}>
           {topPosts.map((post) => (
             <TopPostCard key={post.id} post={post} />
           ))}
@@ -78,7 +86,7 @@ export default function HomeRightSidebar() {
       )}
 
       {recentViewedPosts?.length > 0 && (
-        <SidebarCardWrapper title="RECENTLY VIEWED">
+        <SidebarCardWrapper title={HOME_SIDEBAR_SECTION_TITLES.RECENTLY_VIEWED}>
           {recentViewedPosts.map((post) => (
             <RelatedPostCard key={post.id} post={post} />
           ))}

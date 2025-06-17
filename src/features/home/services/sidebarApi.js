@@ -1,6 +1,6 @@
 import axios from "@/api/axios";
 import { ROUTES } from "@/constants/apiRoutes/routes";
-import { POSTS } from "@/constants/apiRoutes/postRoutes";
+import { POSTS } from "@/constants/apiRoutes/posts";
 
 export const fetchRecentPostsFromMyCommunities = () =>
   axios(ROUTES.MY_COMMUNITY_RECENT);

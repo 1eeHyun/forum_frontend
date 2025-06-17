@@ -13,3 +13,7 @@ export function getViewedPostIds() {
   const stored = localStorage.getItem(RECENT_KEY);
   return stored ? JSON.parse(stored) : [];
 }
+
+export function clearViewedPostIds() {
+  localStorage.removeItem(RECENT_KEY);
+}

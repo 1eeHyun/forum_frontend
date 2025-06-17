@@ -2,6 +2,9 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { ROUTES } from "@/constants/apiRoutes/routes";
+import { POST_LABELS } from "@/constants/labels/postLabels";
+
 export default function RelatedPostCard({ post }) {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
@@ -12,17 +15,17 @@ export default function RelatedPostCard({ post }) {
   const communityImage = post.communityProfilePicture?.imageUrl;
 
   const openPost = () => {
-    navigate(`/?postId=${post.id}`);
+    navigate(`${ROUTES.HOME}?postId=${post.id}`);
   };
 
   const openProfile = (e) => {
     e.stopPropagation();
-    navigate(`/profile/${post.author?.username}`);
+    navigate(ROUTES.PROFILE(post.author?.username));
   };
 
   const openCommunity = (e) => {
     e.stopPropagation();
-    navigate(`/communities/${post.communityId}`);
+    navigate(ROUTES.COMMUNITY(post.communityId));
   };
 
   return (
@@ -32,7 +35,7 @@ export default function RelatedPostCard({ post }) {
         relative rounded-lg p-3 transition cursor-pointer
         ${thumbnail ? "flex gap-3 items-center" : "flex-col space-y-2"}
         hover:bg-card-hover hover:scale-[1.01]
-         dark:hover:bg-dark-card-hover
+        dark:hover:bg-dark-card-hover
       `}
     >
       {/* Close Button */}
@@ -63,7 +66,7 @@ export default function RelatedPostCard({ post }) {
       <div className="flex flex-col justify-between text-sm text-muted w-full">
         <div className="flex items-center gap-2 mb-1" onClick={openCommunity}>
           <img
-            src={communityImage || "/assets/default-community.jpg"}
+            src={communityImage}
             alt="community"
             className="w-6 h-6 rounded-full object-cover border border-card"
           />
@@ -74,7 +77,7 @@ export default function RelatedPostCard({ post }) {
             onClick={openProfile}
             className="text-xs text-muted hover:underline hover:text-primary cursor-pointer"
           >
-            • {post.author?.nickname}
+            {POST_LABELS.AUTHOR_PREFIX} {post.author?.nickname}
           </span>
         </div>
 
@@ -89,8 +92,8 @@ export default function RelatedPostCard({ post }) {
         )}
 
         <div className="text-xs text-muted mt-2 flex gap-4">
-          <span>{post.likeCount} likes</span>
-          <span>{post.commentCount} comments</span>
+          <span>{post.likeCount} {POST_LABELS.LIKES}</span>
+          <span>{post.commentCount} {POST_LABELS.COMMENTS}</span>
         </div>
       </div>
     </div>
