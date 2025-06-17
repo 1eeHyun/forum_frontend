@@ -7,6 +7,7 @@ export default function PostHeader({ post }) {
 
   return (
     <div className="flex items-center justify-between px-4 py-3">
+      {/* Community Info */}
       <div className="flex items-center gap-2">
         {post.community?.imageDTO?.imageUrl && (
           <img
@@ -18,13 +19,14 @@ export default function PostHeader({ post }) {
         <Link
           to={ROUTES.COMMUNITY(post.community.id)}
           onClick={(e) => e.stopPropagation()}
-          className="text-sm text-gray-300 font-medium hover:underline"
+          className="text-sm text-muted font-medium hover:underline"
         >
           {post.community.name}
         </Link>
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-gray-400">
+      {/* Author Info + Time */}
+      <div className="flex items-center gap-2 text-sm text-light-muted dark:text-muted">
         <Link
           to={ROUTES.PROFILE(post.author.username)}
           onClick={(e) => e.stopPropagation()}

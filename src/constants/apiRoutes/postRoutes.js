@@ -1,4 +1,4 @@
-export const POST_ROUTES = {
+export const POSTS = {
 
     FETCH_PAGINATED: { method: "GET", url: "/posts" },
     CREATE: { method: "POST", url: "/posts" },

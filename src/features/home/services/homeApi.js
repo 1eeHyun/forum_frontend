@@ -1,6 +1,6 @@
 import axios from "@/api/axios";
-import { POST_ROUTES } from "@/constants/apiRoutes";
+import { POSTS } from "@/constants/apiRoutes";
 
 export function getHomePosts() {
-  return axios.get(POST_ROUTES.FETCH_PAGINATED.url);
+  return axios.get(POSTS.FETCH_PAGINATED.url);
 }

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getHomePosts } from "../services/homeApi";
 
 import MainLayout from "@/layout/MainLayout";
-import HomeRightSidebar from "../components/HomeRightSidebar";
+import HomeRightSidebar from "../components/sidebar/HomeRightSidebar";
 import PostList from "@/features/post/components/list/PostList";
 
 export default function HomePage() {
@@ -25,7 +25,7 @@ export default function HomePage() {
   return (
     <MainLayout rightSidebar={<HomeRightSidebar />}>
       {loading ? (
-        <p className="text-gray-400">Loading posts...</p>
+        <p className="text-muted dark:text-dark-muted">Loading posts...</p>
       ) : (
         <PostList posts={posts} />
       )}

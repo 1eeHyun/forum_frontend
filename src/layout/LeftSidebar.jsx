@@ -3,15 +3,15 @@ export default function LeftSidebar({ isOpen }) {
       <div className="flex flex-col space-y-3">
         {isOpen ? (
           <>
-            <a href="#" className="text-sm text-gray-300 hover:text-white">🏠 Home</a>
-            <a href="#" className="text-sm text-gray-300 hover:text-white">🔥 Trending</a>
-            <a href="#" className="text-sm text-gray-300 hover:text-white">📁 Categories</a>
+            <a href="#" className="text-sm text-muted hover:text-white dark:hover:text-primary">🏠 Home</a>
+            <a href="#" className="text-sm text-muted hover:text-white dark:hover:text-primary">🔥 Trending</a>
+            <a href="#" className="text-sm text-muted hover:text-white dark:hover:text-primary">📁 Categories</a>
           </>
         ) : (
           <>
-            <span className="text-gray-400 text-xl">🏠</span>
-            <span className="text-gray-400 text-xl">🔥</span>
-            <span className="text-gray-400 text-xl">📁</span>
+            <span className="text-muted text-xl">🏠</span>
+            <span className="text-muted text-xl">🔥</span>
+            <span className="text-muted text-xl">📁</span>
           </>
         )}
       </div>

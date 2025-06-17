@@ -2,26 +2,97 @@
 @tailwind components;
 @tailwind utilities;
 
-/* index.css */
-body {
-  @apply bg-[#0e1012] text-white;
+html, body, #root {
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  overflow-x: hidden;
+  scroll-padding-top: 3.5rem;
+  overscroll-behavior-y: none;
 }
 
+body {
+  @apply transition-colors duration-200;
+}
+
+/* Light mode */
+html.light body {
+  @apply bg-[#f9fafb] text-black;
+}
+
+/* Dark mode */
+html.dark body {
+  @apply bg-[#1a1d21] text-white;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* Light mode scrollbar */
+html.light ::-webkit-scrollbar-thumb {
+  background-color: #9ca3af; /* gray-400 */
+  border-radius: 3px;
+}
+
+/* Dark mode scrollbar */
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* gray-600 */
+  border-radius: 3px;
+}
+
+/* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #333 transparent;
 }
 
-*::-webkit-scrollbar {
-  width: 8px;
+html.light * {
+  scrollbar-color: #9ca3af transparent;
 }
 
-*::-webkit-scrollbar-track {
-  background: transparent;
+html.dark * {
+  scrollbar-color: #4b5563 transparent;
 }
 
-*::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
+@layer utilities {
+  .bg-surface {
+    @apply bg-[#f9fafb] dark:bg-[#1a1d21];
+  }
+
+  .bg-action {
+    @apply bg-[#f3f4f6] dark:bg-[#2a2c2f];
+  }
+
+  .bg-action-hover {
+    @apply hover:bg-[#e5e7eb] dark:hover:bg-[#3a3c3f];
+  }
+
+  .text-primary {
+    @apply text-[#2563eb] dark:text-[#60a5fa];
+  }
+
+  .text-danger {
+    @apply text-[#ef4444] dark:text-[#f87171];
+  }
+
+  .text-muted {
+    @apply text-[#4b5563] dark:text-[#d1d5db];
+  }
+
+  .border-card {
+    @apply border-[#e5e7eb] dark:border-[#27292d];
+  }
+
+  .border-card-hover {
+    @apply border-[#d1d5db] dark:border-[#3a3c40];
+  }
+
+  .bg-card-bg {
+    @apply bg-[#f9fafb] dark:bg-[#1a1d21];
+  }
 }

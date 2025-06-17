@@ -9,14 +9,19 @@ export default function PostCard({ post, onClick }) {
   return (
     <div
       onClick={onClick}
-      className="mb-4 w-full cursor-pointer rounded-xl border border-gray-800 hover:border-gray-600 hover:bg-[#1a1d21] hover:scale-[1.01] transition duration-200 overflow-hidden"
+      className="
+        mb-4 w-full cursor-pointer rounded-xl border border-card
+        hover:border-card-hover hover:bg-card-bg hover:scale-[1.01]
+        transition duration-200 overflow-hidden
+        bg-white dark:bg-[#1a1d21]
+      "
     >
       {/* Header */}
       <PostHeader post={post} />
 
       {/* Title */}
       <div className="px-4 mt-2">
-        <h3 className="text-lg font-semibold text-white line-clamp-2 break-words">
+        <h3 className="text-lg font-semibold text-black dark:text-white line-clamp-2 break-words">
           {post.title}
         </h3>
       </div>

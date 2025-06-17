@@ -1,8 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: [
     "./index.html",
-    "./src/**/*.{js,jsx}"
+    "./src/**/*.{js,jsx}",
   ],
   theme: {
     extend: {
@@ -28,6 +29,29 @@ export default {
         13: '13',
         14: '14',
         15: '15',
+      },
+      colors: {
+        action: "#f3f4f6",
+        "action-hover": "#e5e7eb",
+        primary: "#2563eb",
+        danger: "#ef4444",
+        muted: "#4b5563",
+        card: "#e5e7eb",
+        "card-hover": "#e5e7eb",
+        "card-bg": "#f9fafb",
+        "home-sidebar-bg": "#f3f4f6",
+
+        dark: {
+          action: "#2a2c2f",
+          "action-hover": "#3a3c3f",
+          primary: "#60a5fa",
+          danger: "#f87171",
+          muted: "#d1d5db",
+          card: "#27292d",
+          "card-hover": "#1a1d21",
+          "card-bg": "#1a1d21",
+          "home-sidebar-bg": "#000000",
+        },
       },
     },
   },

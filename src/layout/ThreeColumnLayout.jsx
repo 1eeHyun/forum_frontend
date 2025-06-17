@@ -5,8 +5,9 @@ export default function ThreeColumnLayout({ children, rightSidebar, isSidebarOpe
     <div className="flex w-full max-w-7xl mx-auto px-4 pt-14 gap-6">
       {/* Left sidebar */}
       <aside
-        className={`hidden md:flex flex-col transition-all duration-300
-          border-r border-gray-700 p-4
+        className={`
+          hidden md:flex flex-col transition-all duration-300
+          border-r border-card bg-card-bg p-4
           ${isSidebarOpen ? "w-64" : "w-16"}
         `}
       >
@@ -19,7 +20,7 @@ export default function ThreeColumnLayout({ children, rightSidebar, isSidebarOpe
       </main>
 
       {/* Right sidebar */}
-      <aside className="hidden lg:block w-[400px] border-l border-gray-700 p-4 space-y-4">
+      <aside className="hidden lg:block w-[400px] border-l border-card bg-card-bg p-4 space-y-4">
         {rightSidebar}
       </aside>
     </div>
