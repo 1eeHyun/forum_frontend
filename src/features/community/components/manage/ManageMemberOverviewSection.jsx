@@ -39,7 +39,7 @@ export default function ManageMemberOverviewSection({ memberCount, users }) {
             className="flex items-center gap-3 bg-gray-950 border border-gray-600 p-3 rounded-xl hover:bg-[#1b1d20] shadow-sm transition"
           >
             <img
-              src={user.profileImage?.imageUrl || "/assets/default-profile.jpg"}
+              src={user.profileImage?.imageUrl}
               alt={user.nickname}
               className="w-10 h-10 rounded-full object-cover"
             />

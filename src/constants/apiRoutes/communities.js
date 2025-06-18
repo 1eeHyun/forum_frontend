@@ -19,6 +19,11 @@ export const COMMUNITIES = {
     url: `/communities/${communityId}/categories`,
   }),
 
+  GET_RULE: (communityId) => ({
+    method: "GET",
+    url: `/communities/${communityId}/rules`,
+  }),
+
   // Community rules endpoint
   ADD_RULE: (communityId) => ({
     method: "POST",

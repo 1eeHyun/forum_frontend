@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Plus, MoreHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/apiRoutes/routes";
 
 export default function CommunityHeader({
   community,
@@ -13,6 +14,7 @@ export default function CommunityHeader({
   const menuRef = useRef(null);
   const navigate = useNavigate();
 
+  // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -21,7 +23,7 @@ export default function CommunityHeader({
     };
     if (showMenu) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showMenu]);
+  }, [showMenu]);  
 
   return (
     <>
@@ -60,6 +62,7 @@ export default function CommunityHeader({
 
         {/* Buttons */}
         <div className="flex items-center gap-2">
+          {/* Show Create Post button if the user is a manager or member */}
           {["MANAGER", "MEMBER"].includes(role) && (
             <button
               className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white border border-transparent rounded-full shadow-lg hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 transition-all duration-300 ease-in-out"
@@ -70,6 +73,7 @@ export default function CommunityHeader({
             </button>
           )}
 
+          {/* Show Join button if necessary */}
           {showJoinButton && (
             <button
               onClick={onJoinClick}
@@ -79,6 +83,7 @@ export default function CommunityHeader({
             </button>
           )}
 
+          {/* Dropdown menu for additional options */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu((prev) => !prev)}
@@ -88,25 +93,26 @@ export default function CommunityHeader({
             </button>
 
             {showMenu && (
-            <div className="absolute right-0 mt-2 w-44 bg-[#1a1c1f] border border-gray-600 rounded-lg shadow-lg z-10 dark:bg-[#121417] dark:border-gray-700">
-              {role === "MANAGER" && (
-                <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    navigate(ROUTES.COMMUNITY_MANAGE(community.id));
-                  }}
-                  className="w-full px-3 py-2 text-base text-white flex items-center justify-between transition-all duration-300 rounded-lg 
-                  hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  <Plus size={20} className="text-white" />
-                  <span className="pl-4">Manage</span>
-                </button>
-              )}
-            </div>
-          )}
+              <div className="absolute right-0 mt-2 w-44 bg-[#1a1c1f] border border-gray-600 rounded-lg shadow-lg z-10 dark:bg-[#121417] dark:border-gray-700">
+                {/* Manage button only visible to managers */}
+                {role === "MANAGER" && (
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      navigate(ROUTES.COMMUNITY_MANAGE(community.id));
+                    }}
+                    className="w-full px-3 py-2 text-base text-white flex items-center justify-between transition-all duration-300 rounded-lg 
+                    hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    <Plus size={20} className="text-white" />
+                    <span className="pl-4">Manage</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
-      </div>      
+      </div>
     </>
   );
 }

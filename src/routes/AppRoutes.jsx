@@ -1,24 +1,27 @@
 import { Routes, Route } from "react-router-dom";
 import HomePage from "@home/pages/HomePage";
-import PrivateRoute from "./PrivateRoute";
 import CommunityDetailPage from "@community/pages/CommunityDetailPage";
+import CommunityManagePage from "@community/pages/CommunityManagePage";
+import PrivateRoute from "./PrivateRoute"; // PrivateRoute 컴포넌트
 
 export default function AppRoutes() {
   return (
     <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/communities/:id" element={<CommunityDetailPage />} />
-        {/* <Route path="/login" element={<LoginPage />} /> */}
+      {/* Home Page */}
+      <Route path="/" element={<HomePage />} />
 
-        {/* Login needed page */}
-        <Route
-            path="/profile"
-            element={
-            <PrivateRoute>
-                {/* <ProfilePage /> */}                
-            </PrivateRoute>
-            }
-        />
+      {/* Community Detail Page */}
+      <Route path="/communities/:id" element={<CommunityDetailPage />} />
+
+      {/* Login needed page */}
+      <Route
+        path="/communities/:id/manage"
+        element={
+          <PrivateRoute>
+            <CommunityManagePage />
+          </PrivateRoute>
+        }
+      />
     </Routes>
   );
 }

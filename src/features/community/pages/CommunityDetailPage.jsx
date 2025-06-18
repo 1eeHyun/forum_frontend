@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
 import { fetchCommunityInfo } from "@community/services/communityApi";
 import { AlignLeft } from "lucide-react";
-
 import axios from "@/api/axios";
 import CommunityHeader from "@community/components/CommunityHeader";
 import PostList from "@post/components/list/PostList";
@@ -51,18 +50,19 @@ export default function CommunityDetailPage() {
   const [sortOption, setSortOption] = useState("newest");
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Add dark mode state
 
   const sortDropdownRef = useRef(null);
 
   const fetchCommunityDetail = async () => {
     try {
-      const communityData = await fetchCommunityInfo(id, 'detail');
-      setCommunity(communityData); // Assuming 'detail' will return the community data
+      const communityData = await fetchCommunityInfo(id, 'detail');            
+      setCommunity(communityData);  // Assuming 'detail' will return the community data
     } catch (err) {
       console.error("Failed to fetch community:", err);
     }
   };
-
+  
   const fetchCommunityPosts = async () => {
     try {
       const params = new URLSearchParams();
@@ -98,6 +98,17 @@ export default function CommunityDetailPage() {
       setSelectedPostId(postIdFromQuery);
     }
   }, [postIdFromQuery]);
+
+  // Effect to toggle dark mode
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.add("dark");
+      document.body.classList.remove("light");
+    } else {
+      document.body.classList.add("light");
+      document.body.classList.remove("dark");
+    }
+  }, [isDarkMode]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
