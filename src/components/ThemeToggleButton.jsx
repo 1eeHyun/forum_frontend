@@ -18,7 +18,7 @@ export default function ThemeToggleButton() {
       html.classList.remove("dark");
       html.classList.add("light");
       localStorage.setItem("theme", "light");
-    }
+    }    
   }, [isDark]);
 
   return (

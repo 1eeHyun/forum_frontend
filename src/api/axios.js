@@ -9,7 +9,6 @@ const instance = axios.create({
   },
 });
 
-
 // Add a request interceptor to include the token in the headers
 instance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
@@ -18,6 +17,16 @@ instance.interceptors.request.use((config) => {
   }
   return config;
 });
+
+export const apiRequest = async ({ method, url, data, params }) => {
+  try {
+    const response = await axios({ method, url, data, params });
+    return response.data;
+  } catch (error) {
+    console.error("API request failed:", error);
+    throw error;
+  }
+};
 
 // Error handling for 401 and 403
 instance.interceptors.response.use(
@@ -28,7 +37,7 @@ instance.interceptors.response.use(
     const currentPath = window.location.pathname;
 
     const isUnauthorized = status === 401 || status === 403;
-    const isOnLoginPage = currentPath === "/login";
+    const isOnLoginPage = currentPath === "/";
 
     const ignore401Urls = ["/auth/me"];
 
@@ -46,7 +55,7 @@ instance.interceptors.response.use(
     if (isUnauthorized && !shouldIgnore && !isOnLoginPage) {
       localStorage.removeItem("token");
       localStorage.removeItem("username");
-      window.location.href = "/login";
+      window.location.href = "/";
     }
 
     return Promise.reject(error);

@@ -1,6 +1,6 @@
-import RelatedPostCard from "./cards/RelatedPostCard";
-import TopPostCard from "./cards/TopPostCard";
-import SidebarCardWrapper from "./SidebarCardWrapper";
+import RelatedPostCard from "@/components/sidebar/cards/RelatedPostCard";
+import TopPostCard from "@/components/sidebar/cards/TopPostCard";
+import SidebarCardWrapper from "@/components/sidebar/cards/SidebarCardWrapper";
 
 import {
   fetchRecentPostsFromMyCommunities,

@@ -24,10 +24,19 @@ export function AuthProvider({ children }) {
     setIsLoggedIn(false);
     setUsername(null);
     clearThreads();
+    window.location.href = "/"; 
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, username, setUsername, logout }}>
+    <AuthContext.Provider
+      value={{
+        isLoggedIn,
+        setIsLoggedIn,
+        username,
+        setUsername,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

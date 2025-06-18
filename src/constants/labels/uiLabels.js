@@ -21,3 +21,13 @@ export const SEARCH_LABELS = {
     POSTS: "Posts",
     BY: "by",
 };
+
+export const LOGIN_LABELS = {
+    TITLE: "Sign In",
+    USERNAME_OR_EMAIL: "Username or Email",
+    PASSWORD: "Password",
+    SIGN_UP: "Don't have an account?",
+    SUBMIT: "Log In",
+    CANCEL: "Cancel",
+    ERROR_DEFAULT: "Login failed",
+};

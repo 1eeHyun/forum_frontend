@@ -8,3 +8,9 @@ export const HOME_SIDEBAR_SECTION_TITLES = {
     CLEAR: "Clear",
   };
   
+  export const COMMUNITY_SIDEBAR_SECTION_TITLES = {
+    TOP_POSTS_BY_CATEGORY_THIS_WEEK: "Top Posts by Category This Week",
+    NEW_MEMBERS_THIS_WEEK: "New Members This Week",
+    USERS_ONLINE: "Users Online",
+    NO_DATA_AVAILABLE: "No data available",  // General fallback message for no data
+  };

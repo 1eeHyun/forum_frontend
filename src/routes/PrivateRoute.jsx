@@ -1,12 +1,12 @@
-import { Navigate } from "react-router-dom";
-
-const isAuthenticated = () => {
-  return !!localStorage.getItem("token");
-};
+import LoginModal from "@/features/auth/components/LoginModal";
+import { useAuth } from "@/context/AuthContext";
 
 export default function PrivateRoute({ children }) {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+  const { isLoggedIn } = useAuth();
+
+  if (!isLoggedIn) {
+    return <LoginModal onClose={() => {}} />;
   }
+
   return children;
 }

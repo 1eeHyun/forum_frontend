@@ -1,6 +1,6 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, User, MoreVertical, LogIn, Moon } from "lucide-react";
+import { Menu, LogIn, MoreVertical, Moon } from "lucide-react";
 
 import { AUTH } from "@/constants/apiRoutes/auth";
 import { ROUTES } from "@/constants/apiRoutes/routes";
@@ -17,14 +17,15 @@ import SearchBar from "@/components/navbar/SearchBar";
 import CreateMenu from "@/components/navbar/CreateMenu";
 import NotificationDropdown from "@/components/navbar/NotificationDropdown";
 import ProfileDropdown from "@/components/navbar/ProfileDropdown";
-import ThemeToggleButton from "@/components/ThemeToggleButton";
+import ThemeToggleButton from "@/components/ThemeToggleButton"; 
 import LoginModal from "@/features/auth/components/LoginModal";
+import { useTheme } from "@/context/ThemeContext";
 
 export default function Navbar({ onToggleSidebar }) {
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showGuestMenu, setShowGuestMenu] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false); 
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const navigate = useNavigate();
   const guestMenuRef = useRef();
@@ -33,6 +34,8 @@ export default function Navbar({ onToggleSidebar }) {
 
   const { setIsLoggedIn } = useAuth();
   const { clearThreads } = useContext(ChatContext);
+
+  const { toggleTheme } = useTheme();
 
   const fetchUserInfo = async () => {
     try {
@@ -72,7 +75,7 @@ export default function Navbar({ onToggleSidebar }) {
       setUserInfo(null);
       setIsLoggedIn(false);
       clearThreads();
-      navigate(ROUTES.LOGIN);
+      navigate(ROUTES.HOME);
     } catch (err) {
       showErrorToast(NAVBAR_LABELS.LOGOUT_ERROR);
     }
@@ -107,53 +110,56 @@ export default function Navbar({ onToggleSidebar }) {
       <SearchBar />
 
       {/* Right Section */}
-        <div className="flex items-center gap-x-2 relative">
+      <div className="flex items-center gap-x-2 relative">
         {loading ? (
-            <div className="text-gray-400">{NAVBAR_LABELS.LOADING}</div>
+          <div className="text-gray-400">{NAVBAR_LABELS.LOADING}</div>
         ) : isLoggedIn && userInfo ? (
-            <>
+          <>
             <CreateMenu />
             <NotificationDropdown token={token} />
             <ProfileDropdown userInfo={userInfo} onSignOut={handleSignOut} />
-            </>
+          </>
         ) : (
-            <>
+          <>
             <button
-                onClick={() => setShowLoginModal(true)}
-                className="text-sm font-medium px-4 py-1.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              onClick={() => setShowLoginModal(true)}
+              className="text-sm font-medium px-4 py-1.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
             >
-                {NAVBAR_LABELS.LOGIN}
+              {NAVBAR_LABELS.LOGIN}
             </button>
 
             <div className="relative" ref={guestMenuRef}>
-                <button
+              <button
                 onClick={() => setShowGuestMenu((prev) => !prev)}
                 className={NAVBAR_STYLES.GUEST_MENU_BUTTON}
-                >
+              >
                 <MoreVertical size={ICON_SIZES.SM} />
-                </button>
+              </button>
 
-                {showGuestMenu && (
+              {showGuestMenu && (
                 <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-card-bg border border-gray-200 dark:border-gray-700 rounded shadow z-50">
-                    <button
-                    onClick={() => navigate(ROUTES.LOGIN)}
+                  <button
+                    onClick={() => {
+                      setShowGuestMenu(false);
+                      setShowLoginModal(true);
+                    }}
                     className={NAVBAR_STYLES.DROPDOWN_ITEM}
-                    >
+                  >
                     <LogIn size={ICON_SIZES.SM} /> {NAVBAR_LABELS.LOGIN_SIGNUP}
-                    </button>
-                    <div className={NAVBAR_STYLES.DROPDOWN_ITEM}>
+                  </button>
+
+                  <div className={NAVBAR_STYLES.DROPDOWN_ITEM}>
                     <Moon size={ICON_SIZES.SM} />
                     <ThemeToggleButton />
-                    </div>
+                  </div>
                 </div>
-                )}
+              )}
             </div>
-            </>
+          </>
         )}
-        </div>
+      </div>
 
-
-        {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </header>
   );
 }

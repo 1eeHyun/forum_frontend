@@ -23,17 +23,18 @@ export default function MainLayout({ children, rightSidebar }) {
 
       {/* Main Content + Right Sidebar */}
       <div className="pt-14 flex justify-center" style={{ marginLeft: `${sidebarWidth}px` }}>
-        <div className="flex w-full max-w-[1200px] px-6 gap-6">
-            <main className="flex-1 max-w-[800px] py-6">{children}</main>
+  <div className="flex w-full max-w-[1500px] px-6 gap-2">
+    <main className="flex-1 max-w-[1200px] py-6">{children}</main>
+    
+    <aside
+      className="hidden lg:block w-[400px] p-4 space-y-4"
+      style={{ marginTop: "40px" }}
+    >
+      {rightSidebar}
+    </aside>
+  </div>
+</div>
 
-            <aside
-                className="hidden lg:block w-[400px] p-4 space-y-4"
-                style={{ marginTop: "40px" }}
-            >
-                {rightSidebar}
-            </aside>
-        </div>
-        </div>
     </div>
   );
 }

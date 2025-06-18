@@ -16,7 +16,7 @@ export default function PostImageSlider({ images = [] }) {
 
   return (
     <div
-      className="relative w-full h-[300px] md:h-[400px] bg-black overflow-hidden rounded-md mt-3"
+    className="relative w-full h-[300px] md:h-[500px] bg-[url('/bg/mosaic.png')] bg-repeat bg-center bg-gray-200 dark:bg-black overflow-hidden rounded-md mt-3"
       onClick={(e) => e.stopPropagation()}
     >
       <img
@@ -29,13 +29,13 @@ export default function PostImageSlider({ images = [] }) {
         <>
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-1 rounded-full hover:bg-gray-600"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 dark:bg-white/20 text-white dark:text-white p-1 rounded-full hover:bg-gray-600 dark:hover:bg-gray-400"
           >
             <ChevronLeft size={20} />
           </button>
           <button
             onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 text-white p-1 rounded-full hover:bg-gray-600"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 dark:bg-white/20 text-white dark:text-white p-1 rounded-full hover:bg-gray-600 dark:hover:bg-gray-400"
           >
             <ChevronRight size={20} />
           </button>
@@ -45,7 +45,9 @@ export default function PostImageSlider({ images = [] }) {
               <div
                 key={idx}
                 className={`w-2 h-2 rounded-full ${
-                  idx === currentIndex ? "bg-white" : "bg-gray-500"
+                  idx === currentIndex
+                    ? "bg-black dark:bg-white"
+                    : "bg-gray-400 dark:bg-gray-600"
                 }`}
               />
             ))}
