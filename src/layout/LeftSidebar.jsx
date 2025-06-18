@@ -1,11 +1,13 @@
+
+
 export default function LeftSidebar({ isOpen }) {
     return (
-      <div className="flex flex-col space-y-3">
+      <div className="flex flex-col items-start space-y-3">
         {isOpen ? (
           <>
-            <a href="#" className="text-sm text-muted hover:text-white dark:hover:text-primary">🏠 Home</a>
-            <a href="#" className="text-sm text-muted hover:text-white dark:hover:text-primary">🔥 Trending</a>
-            <a href="#" className="text-sm text-muted hover:text-white dark:hover:text-primary">📁 Categories</a>
+            <a href="#" className="text-base text-muted hover:text-primary dark:hover:text-primary">🏠 Home</a>
+            <a href="#" className="text-base text-muted hover:text-primary dark:hover:text-primary">🔥 Trending</a>
+            <button className="text-base text-muted hover:text-primary dark:hover:text-primary">📁 Categories</button>
           </>
         ) : (
           <>
