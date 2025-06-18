@@ -1,7 +1,7 @@
-import { Plus } from "lucide-react";
+import { Plus, PenLine, Users } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/apiRoutes/routes"; 
+import { ROUTES } from "@/constants/apiRoutes/routes";
 
 export default function CreateMenu() {
   const [showCreateMenu, setShowCreateMenu] = useState(false);
@@ -21,31 +21,34 @@ export default function CreateMenu() {
   return (
     <div ref={createRef} className="relative">
       <button
-        onClick={() => setShowCreateMenu((p) => !p)}
-        className="flex items-center gap-1 text-gray-300 hover:text-purple-400"
+        onClick={() => setShowCreateMenu(true)}
+        className="px-1 py-2 rounded-md text-sm text-black dark:text-white hover:bg-gray-200 dark:hover:bg-dark-action-hover transition font-medium flex items-center gap-1"
       >
         <Plus size={16} /> Create
       </button>
 
       {showCreateMenu && (
-        <div className="absolute right-0 mt-2 w-44 bg-[#1a1c1f] border border-gray-700 rounded shadow z-50">
+        <div className="absolute right-0 mt-2 w-52 rounded-xl bg-white dark:bg-dark-card-bg shadow-xl z-50">
           <button
             onClick={() => {
               navigate(ROUTES.CREATE_POST);
               setShowCreateMenu(false);
             }}
-            className="w-full px-4 py-2 hover:bg-gray-700 text-left text-white"
+            className="flex items-center w-full gap-3 px-4 py-3 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-dark-card-hover transition"
           >
-            Post
+            <PenLine size={16} />
+            Create Post
           </button>
+
           <button
             onClick={() => {
               navigate(ROUTES.CREATE_COMMUNITY);
               setShowCreateMenu(false);
             }}
-            className="w-full px-4 py-2 hover:bg-gray-700 text-left text-white"
+            className="flex items-center w-full gap-3 px-4 py-3 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-dark-card-hover transition"
           >
-            Community
+            <Users size={16} />
+            Create Community
           </button>
         </div>
       )}

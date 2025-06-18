@@ -3,5 +3,5 @@ export const POST_LABELS = {
     COMMENTS: "comments",
     VIEWS: "views",
     AUTHOR_PREFIX: "•",
-  };
+};
   

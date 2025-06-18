@@ -30,6 +30,12 @@ export default {
         14: '14',
         15: '15',
       },
+      maxHeight: {
+        "notification-list": "400px",
+      },
+      width: {
+        dropdown: "20rem", // w-80
+      },
       colors: {
         action: "#f3f4f6",
         "action-hover": "#e5e7eb",
@@ -52,6 +58,8 @@ export default {
           "card-bg": "#1a1d21",
           "home-sidebar-bg": "#000000",
         },
+        
+        "notification-unread": "#2c2f34",
       },
     },
   },

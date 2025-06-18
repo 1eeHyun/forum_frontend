@@ -1,13 +1,16 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Menu, User, MoreVertical, LogIn, Moon } from "lucide-react";
+
 import { AUTH } from "@/constants/apiRoutes/auth";
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import { STORAGE_KEYS } from "@/constants/storageKeys";
 import { NAVBAR_LABELS } from "@/constants/labels/uiLabels";
+import { NAVBAR_STYLES } from "@/constants/styles/uiStyles";
 import { ICON_SIZES } from "@/constants/uiSizes";
 import { useAuth } from "@/context/AuthContext";
 import { ChatContext } from "@/context/ChatContext";
+import { showErrorToast } from "@/utils/toast";
 
 import axios from "@/api/axios";
 import SearchBar from "@/components/navbar/SearchBar";
@@ -15,15 +18,16 @@ import CreateMenu from "@/components/navbar/CreateMenu";
 import NotificationDropdown from "@/components/navbar/NotificationDropdown";
 import ProfileDropdown from "@/components/navbar/ProfileDropdown";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
-import { showErrorToast } from "@/utils/toast";
+import LoginModal from "@/features/auth/components/LoginModal";
 
 export default function Navbar({ onToggleSidebar }) {
-  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showGuestMenu, setShowGuestMenu] = useState(false);
-  const guestMenuRef = useRef();
+  const [showLoginModal, setShowLoginModal] = useState(false); 
 
+  const navigate = useNavigate();
+  const guestMenuRef = useRef();
   const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
   const isLoggedIn = !!token;
 
@@ -85,18 +89,14 @@ export default function Navbar({ onToggleSidebar }) {
   }, []);
 
   return (
-    <header
-      className="fixed top-0 left-0 right-0 h-14 z-50 px-6 flex items-center justify-between
-                 bg-card-bg border-b border-card text-black
-                 dark:bg-dark-card-bg dark:border-dark-card dark:text-white"
-    >
+    <header className={NAVBAR_STYLES.HEADER}>
       {/* Left Section */}
       <div className="flex items-center gap-4">
         <button onClick={onToggleSidebar} className="hover:text-purple-400 transition">
           <Menu size={ICON_SIZES.MD} />
         </button>
         <h1
-          className="text-xl font-bold cursor-pointer hover:text-purple-400"
+          className={NAVBAR_STYLES.TITLE}
           onClick={() => navigate(ROUTES.HOME)}
         >
           {NAVBAR_LABELS.TITLE}
@@ -107,43 +107,53 @@ export default function Navbar({ onToggleSidebar }) {
       <SearchBar />
 
       {/* Right Section */}
-      <div className="flex items-center space-x-4 relative">
+        <div className="flex items-center gap-x-2 relative">
         {loading ? (
-          <div className="text-gray-400">{NAVBAR_LABELS.LOADING}</div>
+            <div className="text-gray-400">{NAVBAR_LABELS.LOADING}</div>
         ) : isLoggedIn && userInfo ? (
-          <>
+            <>
             <CreateMenu />
             <NotificationDropdown token={token} />
             <ProfileDropdown userInfo={userInfo} onSignOut={handleSignOut} />
-          </>
+            </>
         ) : (
-          <div className="relative" ref={guestMenuRef}>
+            <>
             <button
-              onClick={() => setShowGuestMenu((prev) => !prev)}
-              className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                onClick={() => setShowLoginModal(true)}
+                className="text-sm font-medium px-4 py-1.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
             >
-              <MoreVertical size={ICON_SIZES.SM} />
+                {NAVBAR_LABELS.LOGIN}
             </button>
 
-            {showGuestMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-card-bg border border-gray-200 dark:border-gray-700 rounded shadow z-50">
+            <div className="relative" ref={guestMenuRef}>
                 <button
-                  onClick={() => navigate(ROUTES.LOGIN)}
-                  className="w-full px-4 py-3 flex items-center gap-3 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+                onClick={() => setShowGuestMenu((prev) => !prev)}
+                className={NAVBAR_STYLES.GUEST_MENU_BUTTON}
                 >
-                  <LogIn size={ICON_SIZES.SM} /> {NAVBAR_LABELS.LOGIN}
+                <MoreVertical size={ICON_SIZES.SM} />
                 </button>
-                <button
-                  className="w-full px-4 py-3 flex items-center gap-3 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <Moon size={ICON_SIZES.SM} />
-                  <ThemeToggleButton />
-                </button>
-              </div>
-            )}
-          </div>
+
+                {showGuestMenu && (
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-dark-card-bg border border-gray-200 dark:border-gray-700 rounded shadow z-50">
+                    <button
+                    onClick={() => navigate(ROUTES.LOGIN)}
+                    className={NAVBAR_STYLES.DROPDOWN_ITEM}
+                    >
+                    <LogIn size={ICON_SIZES.SM} /> {NAVBAR_LABELS.LOGIN_SIGNUP}
+                    </button>
+                    <div className={NAVBAR_STYLES.DROPDOWN_ITEM}>
+                    <Moon size={ICON_SIZES.SM} />
+                    <ThemeToggleButton />
+                    </div>
+                </div>
+                )}
+            </div>
+            </>
         )}
-      </div>
+        </div>
+
+
+        {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
     </header>
   );
 }

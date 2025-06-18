@@ -2,7 +2,6 @@ import { Bell } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import axios from "@/api/axios";
 import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/constants/apiRoutes/routes";
 import { NOTIFICATIONS } from "@/constants/apiRoutes/notifications";
 
 export default function NotificationDropdown({ token }) {
@@ -42,7 +41,6 @@ export default function NotificationDropdown({ token }) {
     try {
       const { method, url } = NOTIFICATIONS.MARK_ALL_READ;
       await axios({ method, url });
-
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch (err) {
@@ -54,7 +52,6 @@ export default function NotificationDropdown({ token }) {
     try {
       const { method, url } = NOTIFICATIONS.RESOLVE(notificationId);
       const res = await axios({ method, url });
-
       const link = res.data.data.link;
 
       setNotifications((prev) =>
@@ -63,7 +60,6 @@ export default function NotificationDropdown({ token }) {
         )
       );
       setUnreadCount((prev) => Math.max(prev - 1, 0));
-
       navigate(link);
       setShowDropdown(false);
     } catch (err) {
@@ -73,53 +69,62 @@ export default function NotificationDropdown({ token }) {
 
   return (
     <div ref={dropdownRef} className="relative">
-      <button onClick={() => setShowDropdown((prev) => !prev)} className="relative mt-1">
-        <Bell className="text-white translate-y-[1px]" />
+      <button
+        onClick={() => setShowDropdown((prev) => !prev)}
+        className="relative p-2 mt-1 rounded-full hover:bg-action-hover dark:hover:bg-dark-action-hover transition"
+      >
+        <Bell className="text-black dark:text-white" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-600 text-xs rounded-full px-1.5">
+          <span className="absolute -top-1 -right-1 bg-red-600 text-xs text-white rounded-full px-1.5">
             {unreadCount}
           </span>
         )}
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 mt-2 w-80 bg-[#1a1c1f] border border-gray-700 rounded shadow z-50">
+        <div className="absolute right-0 mt-2 w-dropdown bg-white dark:bg-dark-card-bg border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden animate-scale-in">
           {/* Header */}
-          <div className="p-3 text-white font-semibold border-b border-gray-600">
+          <div className="p-4 text-sm font-semibold border-b border-gray-200 dark:border-gray-700 text-black dark:text-white flex justify-between items-center">
             Notifications
             <button
               onClick={markAllAsRead}
-              className="text-xs float-right text-blue-400 hover:underline"
+              className="text-xs text-blue-500 hover:underline"
             >
               Mark all as read
             </button>
           </div>
 
-          {/* Scrollable notification list */}
-          <div className="max-h-[400px] overflow-y-auto">
+          {/* Scrollable List */}
+          <div className="max-h-notification-list overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-3 text-gray-400">No notifications</div>
+              <div className="p-4 text-gray-500 dark:text-gray-400 text-sm text-center">
+                No notifications
+              </div>
             ) : (
               notifications.map((n) => (
                 <div
                   key={n.notificationId}
                   onClick={() => handleNavigate(n.notificationId)}
-                  className={`px-4 py-3 border-b border-gray-700 text-sm hover:bg-gray-800 cursor-pointer transition ${
-                    !n.isRead ? "bg-[#2c2f34]" : ""
+                  className={`px-4 py-3 text-sm border-b border-gray-100 dark:border-gray-700 cursor-pointer transition ${
+                    !n.isRead
+                      ? "bg-notification-unread"
+                      : "hover:bg-action-hover dark:hover:bg-dark-action-hover"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-8 h-8 rounded-full border border-gray-500 bg-cover bg-center"
+                      className="w-9 h-9 rounded-full border border-gray-300 dark:border-gray-600 bg-cover bg-center"
                       style={{
                         backgroundImage: `url(${n.sender.profileImage?.imageUrl})`,
                         backgroundPosition: `${n.sender.profileImage?.imagePositionX ?? 50}% ${n.sender.imageDTO?.imagePositionY ?? 50}%`,
                       }}
                     ></div>
-                    <div className="text-white">{n.message}</div>
-                  </div>
-                  <div className="text-gray-500 text-xs mt-1">
-                    {new Date(n.createdAt).toLocaleString()}
+                    <div className="flex-1">
+                      <p className="text-black dark:text-white">{n.message}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {new Date(n.createdAt).toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))
