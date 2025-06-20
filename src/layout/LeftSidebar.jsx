@@ -7,7 +7,7 @@ export default function LeftSidebar({ isOpen }) {
           <>
             <a href="#" className="text-base text-muted hover:text-primary dark:hover:text-primary">🏠 Home</a>
             <a href="#" className="text-base text-muted hover:text-primary dark:hover:text-primary">🔥 Trending</a>
-            <button className="text-base text-muted hover:text-primary dark:hover:text-primary">📁 Categories</button>
+            <button className="text-base text-muted hover:text-primary dark:hover:text-primary">📁 Communities</button>
           </>
         ) : (
           <>
