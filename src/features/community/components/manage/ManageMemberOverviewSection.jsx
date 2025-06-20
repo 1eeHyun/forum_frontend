@@ -48,7 +48,8 @@ export default function ManageMemberOverviewSection({ communityId }) {
       </div>
   
       {/* Member Cards inside border box */}
-      <div className="border bg-white border-gray-300 dark:border-gray-700 rounded-xl p-4">
+      <div className="border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-950 rounded-xl p-4">
+
         <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
           {filteredUsers?.map((user) => (
             <div
