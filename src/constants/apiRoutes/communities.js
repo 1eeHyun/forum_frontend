@@ -10,6 +10,7 @@ export const COMMUNITIES = {
 
   // Post
   POSTS: (communityId) => ({ method: "GET", url: `/communities/${communityId}/posts` }),
+  
   TOP_POSTS_BY_CATEGORY: (communityId) => ({
     method: "GET",
     url: `/communities/${communityId}/top-posts-by-category`,

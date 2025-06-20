@@ -182,13 +182,6 @@ export default function CommunityDetailPage() {
       rightSidebar={
         <CommunityRightSidebar
           communityId={community.id}
-          name={community.name}
-          description={community.description}
-          createdAt={community.createdAt}
-          memberCount={community.memberCount}
-          postCount={posts.length}
-          rules={community.rules}
-          categories={community.categories}
         />
       }
     >

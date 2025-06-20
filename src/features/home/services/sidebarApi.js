@@ -12,5 +12,4 @@ export const fetchRecentViewedPosts = () =>
   axios(POSTS.RECENTLY_VIEWED.url);
 
 export const fetchRelatedPosts = (postId) =>
-  axios(ROUTES.POST_RELATED(postId));
-  
+  axios(ROUTES.POST_RELATED(postId));  

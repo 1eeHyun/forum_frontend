@@ -56,7 +56,7 @@ export const fetchCommunityNewMembers = (communityId) =>
 
 // Get the top posts by category from a community
 export const fetchCommunityTopPostsByCategory = (communityId) =>
-  apiRequest(COMMUNITIES.POSTS(communityId));
+  apiRequest(COMMUNITIES.TOP_POSTS_BY_CATEGORY(communityId));
 
 // Common function to fetch different types of community information (posts, categories, members, etc.)
 export const fetchCommunityInfo = async (communityId, infoType, params) => {
