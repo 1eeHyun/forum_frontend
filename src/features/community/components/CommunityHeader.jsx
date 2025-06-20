@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Plus, MoreHorizontal } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/apiRoutes/routes";
 
 export default function CommunityHeader({
   community,
   onJoinClick,
   showJoinButton,
-  role,
-  onCategoryAdded,
+  role,  
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
@@ -91,16 +91,16 @@ export default function CommunityHeader({
             <div className="absolute right-0 mt-2 w-44 bg-[#1a1c1f] border border-gray-600 rounded-lg shadow-lg z-10 dark:bg-[#121417] dark:border-gray-700">
               {role === "MANAGER" && (
                 <button
-                  onClick={() => {
-                    setShowMenu(false);
-                    navigate(ROUTES.COMMUNITY_MANAGE(community.id));
-                  }}
-                  className="w-full px-3 py-2 text-base text-white flex items-center justify-between transition-all duration-300 rounded-lg 
-                  hover:bg-gray-700 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  <Plus size={20} className="text-white" />
-                  <span className="pl-4">Manage</span>
-                </button>
+                onClick={() => {
+                  setShowMenu(false);
+                  navigate(ROUTES.COMMUNITY_MANAGE(community.id));
+                }}
+                className="w-full px-3 py-2 text-base text-black dark:text-white flex items-center justify-between transition-all duration-300 rounded-lg 
+                bg-white dark:bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                <Plus size={20} />
+                <span className="pl-4">Manage</span>
+              </button>              
               )}
             </div>
           )}

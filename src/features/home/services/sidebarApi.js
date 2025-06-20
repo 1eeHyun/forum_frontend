@@ -6,11 +6,11 @@ export const fetchRecentPostsFromMyCommunities = () =>
   axios(ROUTES.MY_COMMUNITY_RECENT);
 
 export const fetchTopPostsThisWeek = () =>
-    axios.get(POSTS.TOP_WEEKLY.url);
+  axios.get(POSTS.TOP_WEEKLY.url);
 
 export const fetchRecentViewedPosts = () =>
   axios(POSTS.RECENTLY_VIEWED.url);
 
 export const fetchRelatedPosts = (postId) =>
-    axios(ROUTES.POST_RELATED(postId));
+  axios(ROUTES.POST_RELATED(postId));
   

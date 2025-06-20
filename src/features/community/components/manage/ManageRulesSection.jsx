@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
-import {
-  getCommunityRules,
-  addCommunityRule,
-} from "@community/services/communityApi";
 import axios from "@/api/axios";
+import { COMMUNITIES } from "@/constants/apiRoutes/communities";
 
 export default function ManageRulesSection({ communityId }) {
   const [rules, setRules] = useState([]);
@@ -13,7 +10,8 @@ export default function ManageRulesSection({ communityId }) {
 
   const fetchRules = async () => {
     try {
-      const res = await getCommunityRules(communityId);
+      const { method, url } = COMMUNITIES.RULES(communityId);
+      const res = await axios({ method, url });
       setRules(res.data.data);
       setCurrentIndex(0);
     } catch (err) {
@@ -37,7 +35,7 @@ export default function ManageRulesSection({ communityId }) {
 
   const handleAddRule = () => {
     setRules((prev) => [...prev, { title: "", content: "", id: null }]);
-    setCurrentIndex(rules.length); // 새 rule로 이동
+    setCurrentIndex(rules.length);
   };
 
   const handleDelete = async () => {
@@ -53,7 +51,8 @@ export default function ManageRulesSection({ communityId }) {
     }
 
     try {
-      await axios.delete(`/communities/${communityId}/rules/${target.id}`);
+      const url = `/communities/${communityId}/rules/${target.id}`;
+      await axios.delete(url);
       await fetchRules();
     } catch (err) {
       console.error("Delete failed", err.response?.data || err.message);
@@ -65,16 +64,16 @@ export default function ManageRulesSection({ communityId }) {
       await Promise.all(
         rules.map((rule) => {
           if (!rule.title && !rule.content) return;
+
           if (rule.id) {
-            return axios.put(`/communities/${communityId}/rules/${rule.id}`, {
+            const url = `/communities/${communityId}/rules/${rule.id}`;
+            return axios.put(url, {
               title: rule.title,
               content: rule.content,
             });
           } else {
-            return addCommunityRule(communityId, {
-              title: rule.title,
-              content: rule.content,
-            });
+            const { method, url } = COMMUNITIES.ADD_RULE(communityId);
+            return axios({ method, url, data: { title: rule.title, content: rule.content } });
           }
         })
       );
@@ -87,14 +86,14 @@ export default function ManageRulesSection({ communityId }) {
   const currentRule = rules[currentIndex];
 
   return (
-    <div className="bg-black border border-gray-700 rounded-xl p-6 w-full max-w-xl mx-auto">
+    <div className="bg-action-hover dark:bg-black border border-gray-300 dark:border-gray-700 rounded-xl p-6 w-full max-w-xl mx-auto">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-white text-xl font-semibold">Manage Community Rules</h2>
+        <h2 className="text-black dark:text-white text-xl font-semibold">Manage Community Rules</h2>
         <div className="flex items-center gap-3">
           <button
             onClick={handleAddRule}
-            className="w-10 h-10 rounded-full hover:bg-gray-700 flex items-center justify-center text-white"
+            className="w-10 h-10 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 flex items-center justify-center text-black dark:text-white transition"
             title="Add Rule"
           >
             <Plus size={30} />
@@ -110,40 +109,40 @@ export default function ManageRulesSection({ communityId }) {
 
       {/* Content */}
       {loading ? (
-        <p className="text-gray-400">Loading...</p>
+        <p className="text-gray-500 dark:text-gray-400">Loading...</p>
       ) : rules.length === 0 ? (
-        <p className="text-gray-400">No rules yet.</p>
+        <p className="text-gray-500 dark:text-gray-400">No rules yet.</p>
       ) : (
-        <div className="bg-black border border-gray-700 rounded-lg p-6">
+        <div className="bg-white dark:bg-black border border-gray-300 dark:border-gray-700 rounded-lg p-6">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-white text-lg font-semibold">
+            <h3 className="text-black dark:text-white text-lg font-semibold">
               Rule {currentIndex + 1} of {rules.length}
             </h3>
             <button
               onClick={handleDelete}
-              className="text-sm text-red-400 hover:underline"
+              className="text-sm text-red-600 dark:text-red-400 hover:underline"
             >
               Delete
             </button>
           </div>
           <div className="space-y-4">
             <div>
-              <label className="block text-base text-gray-300 mb-1">Title</label>
+              <label className="block text-base text-gray-700 dark:text-gray-300 mb-1">Title</label>
               <input
                 placeholder="Enter title"
                 value={currentRule.title}
                 onChange={(e) => handleChange("title", e.target.value)}
-                className="w-full px-3 py-2 bg-black text-white border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-300 mb-1">Content</label>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-1">Content</label>
               <textarea
                 placeholder="Enter content"
                 rows={5}
                 value={currentRule.content}
                 onChange={(e) => handleChange("content", e.target.value)}
-                className="w-full px-3 py-2 bg-black text-white border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
+                className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-900 text-black dark:text-white border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-base"
               />
             </div>
           </div>
@@ -153,14 +152,14 @@ export default function ManageRulesSection({ communityId }) {
             <button
               disabled={currentIndex === 0}
               onClick={() => setCurrentIndex((prev) => prev - 1)}
-              className="text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              className="text-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed"
             >
               &larr; Previous
             </button>
             <button
               disabled={currentIndex === rules.length - 1}
               onClick={() => setCurrentIndex((prev) => prev + 1)}
-              className="text-white disabled:opacity-30 disabled:cursor-not-allowed"
+              className="text-black dark:text-white disabled:opacity-30 disabled:cursor-not-allowed"
             >
               Next &rarr;
             </button>

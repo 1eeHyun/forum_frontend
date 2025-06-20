@@ -1,3 +1,4 @@
+import axios from "@/api/axios";
 import { apiRequest } from "@/utils/apiRequest"; // Import the apiRequest function
 import { COMMUNITIES } from "@/constants/apiRoutes/communities"; // Import the COMMUNITY API routes
 
@@ -15,7 +16,7 @@ export const getCommunityPosts = (communityId, params) =>
 
 // Get the community's rules
 export const getCommunityRules = (communityId) =>
-  apiRequest(COMMUNITIES.ADD_RULE(communityId));
+  axios(COMMUNITIES.RULES(communityId));
 
 // Get the categories of a community
 export const getCommunityCategories = (communityId) =>
@@ -36,9 +37,8 @@ export const updateCommunityBanner = (communityId, bannerData) =>
 // Get the members of a community
 export const getCommunityMembers = (communityId) => {
   return apiRequest({
-    method: COMMUNITIES.MY.method,
-    url: COMMUNITIES.MY.url,      
-    params: { communityId },      
+    method: COMMUNITIES.MEMBERS(communityId).method,
+    url: COMMUNITIES.MEMBERS(communityId).url,
   });
 };
 

@@ -85,6 +85,26 @@ export default function CommunityRightSidebar({
           ))}
       </SidebarCardWrapper>
 
+      {categories.length > 0 && (
+        <SidebarCardWrapper title="CATEGORIES">
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => {
+                  const searchParams = new URLSearchParams(location.search);
+                  searchParams.set("category", cat.name);
+                  navigate({ search: searchParams.toString() });
+                }}
+                className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm hover:bg-blue-700 transition"
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        </SidebarCardWrapper> 
+      )}
+
       <SidebarCardWrapper title={COMMUNITY_SIDEBAR_SECTION_TITLES.NEW_MEMBERS_THIS_WEEK}>
         {newUsers.length > 0 ? (
           newUsers.map((user) => (

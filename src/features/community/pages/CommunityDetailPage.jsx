@@ -18,18 +18,22 @@ const SORT_OPTIONS = [
 
 // Styles
 const STYLES = {
-  categoryFilter: "bg-[#2b2f33] text-sm text-white px-3 py-1 rounded-full border border-gray-600",
-  sortButton: "flex items-center gap-1 hover:text-white",
-  modalContainer: "bg-[#1a1d21] p-6 rounded-xl shadow-lg text-white w-[90%] max-w-sm",
-  modalButton: "px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded text-sm",
-  confirmButton: "px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm",
-  hoverRed: "hover:text-red-400 text-gray-400"
+  categoryFilter:
+    "bg-gray-200 dark:bg-[#2b2f33] text-sm text-black dark:text-white px-3 py-1 rounded-full border border-gray-400 dark:border-gray-600",
+  sortButton: "flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white",
+  modalContainer:
+    "bg-white dark:bg-[#1a1d21] p-6 rounded-xl shadow-lg text-black dark:text-white w-[90%] max-w-sm",
+  modalButton:
+    "px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 rounded text-sm text-black dark:text-white",
+  confirmButton:
+    "px-4 py-2 bg-blue-500 dark:bg-blue-600 hover:bg-blue-400 dark:hover:bg-blue-500 rounded text-sm text-white",
+  hoverRed: "hover:text-red-500 text-gray-500 dark:text-gray-400",
 };
 
 // Utility function to update query params
 const updateQueryParams = (params, navigate, location) => {
   const updatedParams = new URLSearchParams(location.search);
-  Object.keys(params).forEach(key => {
+  Object.keys(params).forEach((key) => {
     if (params[key]) updatedParams.set(key, params[key]);
     else updatedParams.delete(key);
   });
@@ -56,8 +60,8 @@ export default function CommunityDetailPage() {
 
   const fetchCommunityDetail = async () => {
     try {
-      const communityData = await fetchCommunityInfo(id, 'detail');
-      setCommunity(communityData); // Assuming 'detail' will return the community data
+      const communityData = await fetchCommunityInfo(id, "detail");
+      setCommunity(communityData);
     } catch (err) {
       console.error("Failed to fetch community:", err);
     }
@@ -70,7 +74,7 @@ export default function CommunityDetailPage() {
       if (categoryFromQuery) {
         params.set("category", categoryFromQuery);
       }
-      const postData = await fetchCommunityInfo(id, 'posts', params);
+      const postData = await fetchCommunityInfo(id, "posts", params);
       setPosts(postData);
     } catch (err) {
       console.error("Failed to fetch posts:", err);
@@ -79,10 +83,10 @@ export default function CommunityDetailPage() {
 
   const handleConfirmJoin = async () => {
     try {
-      await fetchCommunityInfo(id, 'join');
+      await fetchCommunityInfo(id, "join");
       setShowJoinModal(false);
-      fetchCommunityDetail(); // Refresh community details after joining
-      fetchCommunityPosts(); // Refresh posts
+      fetchCommunityDetail();
+      fetchCommunityPosts();
     } catch (err) {
       console.error("Failed to join community:", err);
     }
@@ -109,11 +113,10 @@ export default function CommunityDetailPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSortDropdown]);
 
-  if (!community) return <div className="text-white p-4">Loading...</div>;
+  if (!community) return <div className="text-black dark:text-white p-4">Loading...</div>;
 
   const { role } = community;
 
-  // Category Filter Component
   const CategoryFilter = () => {
     if (!categoryFromQuery) return null;
     return (
@@ -126,7 +129,11 @@ export default function CommunityDetailPage() {
             className={STYLES.hoverRed}
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 8.586L15.95 2.636a1 1 0 111.414 1.414L11.414 10l5.95 5.95a1 1 0 01-1.414 1.414L10 11.414l-5.95 5.95a1 1 0 01-1.414-1.414L8.586 10 2.636 4.05A1 1 0 014.05 2.636L10 8.586z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10 8.586L15.95 2.636a1 1 0 111.414 1.414L11.414 10l5.95 5.95a1 1 0 01-1.414 1.414L10 11.414l-5.95 5.95a1 1 0 01-1.414-1.414L8.586 10 2.636 4.05A1 1 0 014.05 2.636L10 8.586z"
+                clipRule="evenodd"
+              />
             </svg>
           </button>
         </div>
@@ -134,19 +141,18 @@ export default function CommunityDetailPage() {
     );
   };
 
-  // Sort Dropdown Component
   const SortDropdown = () => (
     <div className="relative">
       <button
         onClick={() => setShowSortDropdown((prev) => !prev)}
-        className={`flex items-center gap-1 hover:text-card-hover ${showSortDropdown ? 'text-white' : 'text-gray-600'}`}
+        className={`flex items-center gap-1 ${showSortDropdown ? "text-black dark:text-white" : STYLES.sortButton}`}
       >
         <AlignLeft size={16} /> Sort by
       </button>
       {showSortDropdown && (
         <div
           ref={sortDropdownRef}
-          className="absolute top-full left-0 mt-2 w-40 bg-white border border-gray-600 rounded shadow z-10"
+          className="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-[#1e1e1e] border border-gray-300 dark:border-gray-700 rounded shadow z-10"
         >
           {SORT_OPTIONS.map(({ label, value }) => (
             <div
@@ -155,9 +161,13 @@ export default function CommunityDetailPage() {
                 setSortOption(value);
                 setShowSortDropdown(false);
               }}
-              className={`px-4 py-2 cursor-pointer hover:bg-gray-700 border-b border-gray-700 ${
-                sortOption === value ? "bg-[#272d31] text-white" : "text-gray-600"
-              } ${value === "oldest" ? "border-none" : ""}`}
+              className={`px-4 py-2 cursor-pointer transition-colors ${
+                sortOption === value
+                  ? "bg-gray-100 dark:bg-[#272d31] text-black dark:text-white"
+                  : "text-gray-700 dark:text-gray-300"
+              } hover:bg-gray-200 dark:hover:bg-gray-700 ${
+                value === "oldest" ? "border-none" : "border-b border-gray-200 dark:border-gray-700"
+              }`}
             >
               {label}
             </div>
@@ -172,7 +182,7 @@ export default function CommunityDetailPage() {
       rightSidebar={
         <CommunityRightSidebar
           communityId={community.id}
-          name={community.name}          
+          name={community.name}
           description={community.description}
           createdAt={community.createdAt}
           memberCount={community.memberCount}
@@ -182,8 +192,7 @@ export default function CommunityDetailPage() {
         />
       }
     >
-      <div className="text-white">
-        {/* Community Header */}
+      <div className="text-black dark:text-white">
         <CommunityHeader
           community={community}
           showJoinButton={!role || role === "GUEST"}
