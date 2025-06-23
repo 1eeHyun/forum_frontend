@@ -30,4 +30,9 @@ export default defineConfig({
       '@routes': path.resolve(__dirname, './src/routes'),
     },
   },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8080',
+    },
+  },
 })
