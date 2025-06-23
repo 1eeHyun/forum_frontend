@@ -21,29 +21,38 @@ export default function HomeRightSidebar() {
   const [recentCommunityPosts, setRecentCommunityPosts] = useState([]);
   const [recentViewedPosts, setRecentViewedPosts] = useState([]);
 
-  // Recent posts from my communities
+  const removeDuplicates = (posts) =>
+    posts.filter(
+      (post, index, self) =>
+        index === self.findIndex((p) => p.id === post.id)
+    );
+
+  // Recent community post
   useEffect(() => {
     fetchRecentPostsFromMyCommunities()
-      .then((res) => setRecentCommunityPosts(res.data.data))
+      .then((res) => setRecentCommunityPosts(removeDuplicates(res.data.data)))
       .catch((err) =>
         console.error(ERROR_MESSAGES.FETCH_RECENT_COMMUNITY, err)
       );
   }, []);
 
-  // Weekly top posts
+  // Top post
   useEffect(() => {
     fetchTopPostsThisWeek()
-      .then((res) => setTopPosts(res.data.data))
+      .then((res) => setTopPosts(removeDuplicates(res.data.data)))
       .catch((err) => console.error(ERROR_MESSAGES.FETCH_TOP_WEEKLY, err));
   }, []);
 
-  // Recently viewed posts (with token or localStorage)
+  // Recently viewed post
   useEffect(() => {
     const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
 
     if (token) {
       fetchRecentViewedPosts()
-        .then((res) => setRecentViewedPosts(res.data.data))
+        .then((res) => {
+          const unique = removeDuplicates(res.data.data);
+          setRecentViewedPosts(unique);
+        })
         .catch((err) =>
           console.error(ERROR_MESSAGES.FETCH_RECENT_VIEWED, err)
         );
@@ -52,7 +61,10 @@ export default function HomeRightSidebar() {
       if (ids.length > 0) {
         axios
           .get(`${POSTS.RECENTLY_VIEWED.url}?localIds=${ids.join(",")}`)
-          .then((res) => setRecentViewedPosts(res.data.data))
+          .then((res) => {
+            const unique = removeDuplicates(res.data.data);
+            setRecentViewedPosts(unique);
+          })
           .catch((err) =>
             console.error(ERROR_MESSAGES.FETCH_RECENT_LOCAL, err)
           );
@@ -72,7 +84,7 @@ export default function HomeRightSidebar() {
           }
         >
           {recentCommunityPosts.map((post) => (
-            <RelatedPostCard key={post.id} post={post} />
+            <RelatedPostCard key={`community-${post.id}`} post={post} />
           ))}
         </SidebarCardWrapper>
       )}
@@ -80,7 +92,7 @@ export default function HomeRightSidebar() {
       {topPosts.length > 0 && (
         <SidebarCardWrapper title={HOME_SIDEBAR_SECTION_TITLES.TOP_POSTS_THIS_WEEK}>
           {topPosts.map((post) => (
-            <TopPostCard key={post.id} post={post} />
+            <TopPostCard key={`top-${post.id}`} post={post} />
           ))}
         </SidebarCardWrapper>
       )}
@@ -88,7 +100,7 @@ export default function HomeRightSidebar() {
       {recentViewedPosts?.length > 0 && (
         <SidebarCardWrapper title={HOME_SIDEBAR_SECTION_TITLES.RECENTLY_VIEWED}>
           {recentViewedPosts.map((post) => (
-            <RelatedPostCard key={post.id} post={post} />
+            <RelatedPostCard key={`viewed-${post.id}`} post={post} />
           ))}
         </SidebarCardWrapper>
       )}
