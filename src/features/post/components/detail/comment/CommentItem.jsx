@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import CommentInput from "./CommentInput";
 import CommentActions from "./CommentActions";
 import { ROUTES } from "@/constants/apiRoutes/routes";
@@ -15,7 +15,7 @@ export default function CommentItem({
   toggleReplyList,
   onCommentAdded,
   depth = 0,
-  user
+  user,
 }) {
   const navigate = useNavigate();
   const comment = commentMap.get(commentId);
@@ -31,37 +31,51 @@ export default function CommentItem({
   return (
     <div id={`comment-${comment.commentId}`} className="space-y-2">
       <div className="flex gap-3 mt-4 relative">
+        {/* Profile image */}
         <div
-          className="w-9 h-9 rounded-full border border-gray-500 bg-cover bg-center cursor-pointer"
+          className="w-9 h-9 rounded-full border border-gray-400 dark:border-gray-500 bg-cover bg-center bg-gray-200 dark:bg-gray-800 cursor-pointer"
           style={{
             backgroundImage: `url(${imageUrl})`,
             backgroundPosition: `${imagePosX}% ${imagePosY}%`,
           }}
           onClick={() => navigate(ROUTES.PROFILE(comment.author.username))}
-        ></div>
+        />
 
         <div className="flex-1">
-          <div className="text-sm text-gray-300 mb-1">
+          {/* Author + Timestamp */}
+          <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">
             <span
-              className="font-semibold text-white cursor-pointer"
+              className="font-semibold text-gray-900 dark:text-white cursor-pointer"
               onClick={() => navigate(ROUTES.PROFILE(comment.author.username))}
             >
               @{comment.author.nickname}
             </span>{" "}
-            <span className="text-xs text-gray-500">{formatTimeAgo(comment.createdAt)}</span>
+            <span className="text-xs text-gray-400"> • {formatTimeAgo(comment.createdAt)}</span>
           </div>
 
-          <div className="whitespace-pre-wrap text-white">{comment.content}</div>
+          {/* Comment content */}
+          <div className="whitespace-pre-wrap text-gray-800 dark:text-white">{comment.content}</div>
 
-          <div className="flex gap-4 text-sm text-gray-400 mt-2 items-center">
-            <CommentActions commentId={comment.commentId} />
-            <button className="hover:text-white" onClick={() => toggleReplyInput(comment.commentId)}>
+          {/* Actions */}
+          <div className="flex gap-4 text-sm text-gray-500 dark:text-gray-400 mt-2 items-center">
+            <CommentActions
+              commentId={comment.commentId}
+              initialLiked={comment.liked}
+              initialDisliked={comment.disliked}
+              initialLikeCount={comment.likeCount}
+            />
+
+            <button
+              className="hover:text-black dark:hover:text-white transition"
+              onClick={() => toggleReplyInput(comment.commentId)}
+            >
               {showReplyInput ? "Cancel" : "Reply"}
             </button>
+
             {comment.replies?.length > 0 && (
               <button
                 onClick={() => toggleReplyList(comment.commentId)}
-                className="text-blue-400 hover:underline flex items-center gap-1 text-sm mt-2"
+                className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-sm mt-2"
               >
                 <ChevronDown
                   className={`w-4 h-4 transition-transform duration-200 ${isReplyListOpen ? "rotate-180" : ""}`}
@@ -72,6 +86,7 @@ export default function CommentItem({
             )}
           </div>
 
+          {/* Reply input */}
           {showReplyInput && (
             <div className="mt-2">
               <CommentInput
@@ -85,6 +100,7 @@ export default function CommentItem({
         </div>
       </div>
 
+      {/* Nested replies */}
       {isReplyListOpen && comment.replies?.length > 0 && (
         <div className="ml-12 space-y-4">
           {comment.replies.map((reply) => (

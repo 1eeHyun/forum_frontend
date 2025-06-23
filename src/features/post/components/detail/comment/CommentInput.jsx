@@ -50,7 +50,6 @@ export default function CommentInput({ postId, parentCommentId = null, onComment
       setSubmitting(false);
     }
   };
-  
 
   const imageUrl = user?.profileImage?.imageUrl;
   const posX = user?.profileImage?.imagePositionX ?? 50;

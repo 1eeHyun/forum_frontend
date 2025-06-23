@@ -1,6 +1,7 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
+import { POST_ROUTES, AUTH_ROUTES } from "@/constants/apiRoutes";
 
 import PostContent from "@post/components/detail/post/content/PostContent";
 import PostCommentSection from "@post/components/detail/comment/PostCommentSection";
@@ -11,21 +12,23 @@ import MainLayout from "@/layout/MainLayout";
 
 export default function PostDetailPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const [post, setPost] = useState(null);
-  const [error, setError] = useState(null);
+  const [user, setUser] = useState(undefined); // undefined = loading, null = not logged in
   const [loading, setLoading] = useState(true);
-
-  const [user, setUser] = useState(undefined);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await axios.get(`/posts/${id}`);
-        setPost(response.data.data);
+        const res = await axios({
+          method: POST_ROUTES.DETAIL(id).method,
+          url: POST_ROUTES.DETAIL(id).url,
+        });
+        setPost(res.data.data);
         setError(null);
       } catch (err) {
+        console.error(err);
         setError("Failed to load post.");
       } finally {
         setLoading(false);
@@ -34,10 +37,13 @@ export default function PostDetailPage() {
 
     const fetchUser = async () => {
       try {
-        const res = await axios.get("/auth/me");
+        const res = await axios({
+          method: AUTH_ROUTES.ME.method,
+          url: AUTH_ROUTES.ME.url,
+        });
         setUser(res.data.data);
-      } catch (err) {
-        setUser(null);
+      } catch {
+        setUser(null); // not logged in
       }
     };
 
@@ -45,7 +51,7 @@ export default function PostDetailPage() {
     fetchUser();
   }, [id]);
 
-  if (loading || user === undefined) {
+  if (loading) {
     return (
       <MainLayout>
         <div className="text-center text-gray-500 dark:text-gray-400 p-8">Loading post...</div>
@@ -63,10 +69,14 @@ export default function PostDetailPage() {
     );
   }
 
+  const handleCommentClick = () => {
+    document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <MainLayout>
       <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 py-8 gap-8">
-        {/* ======= Left Section: Post ======= */}
+        {/* Left: Post content */}
         <div className="flex-1">
           <PostHeader
             title={post.title}
@@ -74,12 +84,22 @@ export default function PostDetailPage() {
             createdAt={post.createdAt}
             community={post.community}
           />
+
           <PostContent
             content={post.content}
             imageUrls={post.imageUrls}
             likeUsers={post.likeUsers}
           />
-          <PostStat likeCount={post.likeCount} commentCount={post.commentCount} />
+
+          <PostStat
+            postId={post.id}
+            initialLikeCount={post.likeCount}
+            commentCount={post.commentCount}
+            user={user} // used to determine like/dislike access
+            onCommentClick={handleCommentClick}
+            onShare={() => navigator.clipboard.writeText(window.location.href)}
+          />
+
           <PostCommentSection
             comments={post.comments}
             commentCount={post.commentCount}
@@ -89,7 +109,7 @@ export default function PostDetailPage() {
           />
         </div>
 
-        {/* ======= Right Section: Community Sidebar ======= */}
+        {/* Right: Community sidebar */}
         {post.community?.id && (
           <div className="w-full lg:w-[400px] shrink-0">
             <CommunityRightSidebar communityId={post.community.id} />
