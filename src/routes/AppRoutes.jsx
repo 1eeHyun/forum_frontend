@@ -1,9 +1,14 @@
 import { Routes, Route } from "react-router-dom";
+
 import HomePage from "@home/pages/HomePage";
 import PrivateRoute from "./PrivateRoute";
+
 import PostDetailPage from "@post/pages/PostDetailPage";
+import CreatePostPage from "@post/pages/CreatePostPage";
+
 import CommunityDetailPage from "@community/pages/CommunityDetailPage";
 import CommunityManagePage from "@community/pages/CommunityManagePage"; 
+
 import ProfilePage from "@profile/pages/ProfilePage";
 
 export default function AppRoutes() {
@@ -13,7 +18,17 @@ export default function AppRoutes() {
 
       <Route path="/communities/:id" element={<CommunityDetailPage />} />
       <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
+
       <Route path="/post/:id" element={<PostDetailPage />} />
+
+      <Route
+        path="/create-post"
+        element={
+          <PrivateRoute>
+            <CreatePostPage />
+          </PrivateRoute>
+        }
+      />
 
       <Route
         path="/profile/:username"
