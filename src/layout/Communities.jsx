@@ -1,6 +1,7 @@
-import { COMMUNITIES } from "@/constants/apiRoutes";
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "@/api/axios";
+import { COMMUNITIES } from "@/constants/apiRoutes";
 
 export default function Communities() {
   const [communities, setCommunities] = useState([]);
@@ -9,37 +10,12 @@ export default function Communities() {
   useEffect(() => {
     async function fetchCommunities() {
       try {
-        const token = localStorage.getItem("token");
-
-        const response = await fetch(COMMUNITIES.MY.url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.status === 401) {
-          console.warn("401 Unauthorized – redirecting or handling auth");
-          setCommunities([]); // fallback
-          return;
-        }
-
-        const text = await response.text();
-
-        try {
-          const parsedResponse = JSON.parse(text);
-          if (Array.isArray(parsedResponse?.data)) {
-            setCommunities(parsedResponse.data);
-          } else {
-            console.warn("No valid 'data' field in response", parsedResponse);
-            setCommunities([]); // fallback
-          }
-        } catch (jsonErr) {
-          console.error("Failed to parse JSON:", jsonErr);
-          setCommunities([]); // fallback
-        }
+        const { method, url } = COMMUNITIES.MY;
+        const response = await axios({ method, url });
+        setCommunities(response.data?.data || []);
       } catch (err) {
-        console.error("Network or fetch error:", err);
-        setCommunities([]); // fallback
+        console.error("Failed to fetch communities", err);
+        setCommunities([]);
       }
     }
 
