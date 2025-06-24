@@ -7,23 +7,27 @@ export default function PostHeader({ post }) {
 
   return (
     <div className="flex items-center justify-between px-4 py-3">
-      {/* Community Info */}
-      <div className="flex items-center gap-2">
-        {post.community?.imageDTO?.imageUrl && (
-          <img
-            src={post.community.imageDTO.imageUrl}
-            alt={post.community.name || "Community Logo"}
-            className="w-6 h-6 rounded-full object-cover"
-          />
-        )}
-        <Link
-          to={ROUTES.COMMUNITY(post.community.id)}
-          onClick={(e) => e.stopPropagation()}
-          className="text-sm text-gray-500 font-medium hover:underline" // text-muted => text-gray-500 or text-light-muted
-        >
-          {post.community.name}
-        </Link>
-      </div>
+      {/* Community Info (only if post.community exists) */}
+      {post.community ? (
+        <div className="flex items-center gap-2">
+          {post.community.imageDTO?.imageUrl && (
+            <img
+              src={post.community.imageDTO.imageUrl}
+              alt={post.community.name || "Community Logo"}
+              className="w-6 h-6 rounded-full object-cover"
+            />
+          )}
+          <Link
+            to={ROUTES.COMMUNITY(post.community.id)}
+            onClick={(e) => e.stopPropagation()}
+            className="text-sm text-gray-500 font-medium hover:underline"
+          >
+            {post.community.name}
+          </Link>
+        </div>
+      ) : (
+        <div /> // Empty div to preserve layout spacing if needed
+      )}
 
       {/* Author Info + Time */}
       <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
