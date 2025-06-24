@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { ChatProvider } from "@/context/ChatContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+
 import Navbar from "@/layout/Navbar";
 import AppRoutes from "@/routes/AppRoutes";
 import LoginModalProvider from "@/features/auth/providers/LoginModalProvider";

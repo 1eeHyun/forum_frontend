@@ -4,6 +4,7 @@ import { POSTS } from "./posts";
 import { COMMUNITIES } from "./communities";
 import { NOTIFICATIONS } from "./notifications";
 import { ROUTES } from "./routes";
+import { PROFILE } from "./profile";
 
 // Named aliases for easier external usage
 export const AUTH_ROUTES = AUTH;
@@ -21,6 +22,7 @@ export const API = {
   COMMUNITIES,
   NOTIFICATIONS,
   ROUTES,
+  PROFILE,
 };
 
 // For direct named imports
@@ -31,4 +33,5 @@ export {
   COMMUNITIES,
   NOTIFICATIONS,
   ROUTES,
+  PROFILE,
 };

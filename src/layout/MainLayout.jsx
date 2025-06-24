@@ -1,10 +1,30 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import Navbar from "./Navbar";
 import LeftSidebar from "./LeftSidebar";
+import ChatFloatingButton from "@/components/chat/ChatFloatingButton";
+import ChatSidebar from "@/components/chat/ChatSidebar";
+import { ChatContext } from "@/context/ChatContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function MainLayout({ children, rightSidebar }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
+
+  const { isLoggedIn } = useAuth();
+  const { threads } = useContext(ChatContext);
+  
   const sidebarWidth = isSidebarOpen ? 256 : 64;
+  const currentUsername = localStorage.getItem("username");
+
+  // Calculate total unread messages across all threads
+  const totalUnreadCount = threads.reduce((count, thread) => {
+    const lastReadId = thread.lastReadMessageId || 0;
+    const messages = thread.messages || [];
+    const unread = messages.filter(
+      (msg) => msg.id > lastReadId && msg.senderUsername !== currentUsername
+    ).length;
+    return count + unread;
+  }, 0);  
 
   return (
     <div className="min-h-screen bg-card-bg text-black dark:bg-card-bg dark:text-white transition-colors">
@@ -35,6 +55,17 @@ export default function MainLayout({ children, rightSidebar }) {
           )}
         </div>
       </div>
+      
+      {/* Chat floating button */}
+      {isLoggedIn && (
+          <>
+            <ChatFloatingButton
+              onClick={() => setChatOpen((prev) => !prev)}
+              unreadCount={totalUnreadCount} 
+            />
+            <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} />
+          </>
+      )}
     </div>
   );
 }

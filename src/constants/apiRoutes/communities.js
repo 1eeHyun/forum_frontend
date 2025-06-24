@@ -1,7 +1,7 @@
 export const COMMUNITIES = {  
-  CREATE: { method: "POST", url: "/api/communities" },
-  MY: { method: "GET", url: "/api/communities/my" },
-  ALL: { method: "GET", url: "/api/communities" },
+  CREATE: { method: "POST", url: "/communities" },
+  MY: { method: "GET", url: "/communities/my" },
+  ALL: { method: "GET", url: "/communities" },
   DETAIL: (communityId) => ({ method: "GET", url: `/communities/${communityId}` }),
   MANAGE: (communityId) => ({ method: "GET", url: `/communities/${communityId}/manage` }),
 
