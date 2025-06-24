@@ -1,11 +1,12 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
-import { POST_ROUTES, AUTH_ROUTES } from "@/constants/apiRoutes";
+import { POST_ROUTES, AUTH_ROUTES, PROFILE } from "@/constants/apiRoutes";
 
 import PostContent from "@post/components/detail/post/content/PostContent";
 import PostCommentSection from "@post/components/detail/comment/PostCommentSection";
 import CommunityRightSidebar from "@community/components/sidebar/CommunityRightSidebar";
+import ProfileRightSidebar from "@profile/components/sidebar/ProfileRightSidebar";
 import PostStat from "@post/components/detail/post/stat/PostStat";
 import PostHeader from "@post/components/detail/post/header/PostHeader";
 import MainLayout from "@/layout/MainLayout";
@@ -18,6 +19,12 @@ export default function PostDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [sidebarProfile, setSidebarProfile] = useState(null);
+  const [topPosts, setTopPosts] = useState([]);
+  const [recentPosts, setRecentPosts] = useState([]);
+  const [joinedCommunities, setJoinedCommunities] = useState([]);
+
+  // Fetch post and user
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -43,13 +50,42 @@ export default function PostDetailPage() {
         });
         setUser(res.data.data);
       } catch {
-        setUser(null); // not logged in
+        setUser(null);
       }
     };
 
     fetchPost();
     fetchUser();
   }, [id]);
+
+  // Fetch sidebar profile data (for public posts)
+  useEffect(() => {
+    const fetchSidebarData = async () => {
+      if (!post?.community && post?.author?.username) {
+        const username = post.author.username;
+
+        try {
+          const profileRes = await axios(PROFILE.GET(username));
+          const topPostsRes = await axios(PROFILE.GET_TOP_POSTS(username));
+          const recentPostsRes = await axios(PROFILE.GET_LATEST_POSTS(username));
+          const communitiesRes = await axios(PROFILE.GET_COMMUNITIES(username));
+
+          setSidebarProfile(profileRes.data.data);
+          setTopPosts(topPostsRes.data.data);
+          setRecentPosts(recentPostsRes.data.data);
+          setJoinedCommunities(communitiesRes.data.data);
+        } catch (err) {
+          console.error("Failed to fetch profile sidebar data:", err);
+        }
+      }
+    };
+
+    fetchSidebarData();
+  }, [post?.author?.username]);
+
+  const handleCommentClick = () => {
+    document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" });
+  };
 
   if (loading) {
     return (
@@ -69,12 +105,19 @@ export default function PostDetailPage() {
     );
   }
 
-  const handleCommentClick = () => {
-    document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" });
-  };
+  const rightSidebar = post.community?.id ? (
+    <CommunityRightSidebar communityId={post.community.id} />
+  ) : sidebarProfile ? (
+    <ProfileRightSidebar
+      profile={sidebarProfile}
+      topLikedPosts={topPosts}
+      recentPosts={recentPosts}
+      joinedCommunities={joinedCommunities}
+    />
+  ) : null;
 
   return (
-    <MainLayout>
+    <MainLayout rightSidebar={rightSidebar}>
       <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 py-8 gap-8">
         {/* Left: Post content */}
         <div className="flex-1">
@@ -95,7 +138,7 @@ export default function PostDetailPage() {
             postId={post.id}
             initialLikeCount={post.likeCount}
             commentCount={post.commentCount}
-            user={user} // used to determine like/dislike access
+            user={user}
             onCommentClick={handleCommentClick}
             onShare={() => navigator.clipboard.writeText(window.location.href)}
           />
@@ -108,13 +151,6 @@ export default function PostDetailPage() {
             user={user}
           />
         </div>
-
-        {/* Right: Community sidebar */}
-        {post.community?.id && (
-          <div className="w-full lg:w-[400px] shrink-0">
-            <CommunityRightSidebar communityId={post.community.id} />
-          </div>
-        )}
       </div>
     </MainLayout>
   );

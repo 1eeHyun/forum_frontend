@@ -9,19 +9,37 @@ import ProfileInfoCard from "@profile/components/sidebar/cards/ProfileInfoCard";
 import { PROFILE_SIDEBAR_SECTION_TITLES } from "@/constants/labels/sidebarLabels";
 import { PROFILE } from "@/constants/apiRoutes/profile";
 
-export default function ProfileRightSidebar() {
+export default function ProfileRightSidebar({
+  profile: initialProfile = null,
+  topLikedPosts = [],
+  recentPosts = [],
+  joinedCommunities = [],
+}) {
   const { username } = useParams();
-
+  const [profile, setProfile] = useState(initialProfile);
   const [sidebarData, setSidebarData] = useState({
-    topPosts: [],
-    latestPosts: [],
-    communities: [],
+    topPosts: topLikedPosts,
+    latestPosts: recentPosts,
+    communities: joinedCommunities,
   });
 
-  const [profile, setProfile] = useState(null);
-
+  // Update local state when props change
   useEffect(() => {
-    if (!username) return;
+    setSidebarData({
+      topPosts: topLikedPosts,
+      latestPosts: recentPosts,
+      communities: joinedCommunities,
+    });
+  }, [topLikedPosts, recentPosts, joinedCommunities]);
+
+  // Fallback data fetching if props are empty
+  useEffect(() => {
+    const noProps =
+      topLikedPosts.length === 0 &&
+      recentPosts.length === 0 &&
+      joinedCommunities.length === 0;
+
+    if (initialProfile || !username || !noProps) return;
 
     const fetchData = async () => {
       try {
@@ -45,7 +63,7 @@ export default function ProfileRightSidebar() {
     };
 
     fetchData();
-  }, [username]);
+  }, [username, initialProfile]);
 
   const sections = [
     {

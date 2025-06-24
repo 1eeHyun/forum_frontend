@@ -1,13 +1,15 @@
 import { useRef, useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { fetchProfile, fetchProfilePosts } from "@profile/services/profileApi";
+import { fetchProfile, fetchProfilePosts } from "@/features/profile/services/profileApi";
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import { PROFILE_PAGE } from "@/constants/profile/pageConstants";
+import { PROFILE } from "@/constants/apiRoutes/profile";
 
-import ProfileHeader from "@profile/components/ProfileHeader";
-import ProfilePostList from "@profile/components/ProfilePostList";
+import ProfileHeader from "@/features/profile/components/ProfileHeader";
+import ProfilePostList from "@/features/profile/components/ProfilePostList";
 import MainLayout from "@/layout/MainLayout";
-import ProfileRightSidebar from "../components/sidebar/ProfileRightSidebar";
+import ProfileRightSidebar from "@/features/profile/components/sidebar/ProfileRightSidebar";
+import axios from "@/api/axios";
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -24,6 +26,11 @@ export default function ProfilePage() {
   const [hasMore, setHasMore] = useState(true);
   const [sortOption, setSortOption] = useState(PROFILE_PAGE.DEFAULT_SORT);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [sidebarData, setSidebarData] = useState({
+    topPosts: [],
+    latestPosts: [],
+    communities: [],
+  });
 
   // Detect if sidebar is open based on <aside> width
   useEffect(() => {
@@ -34,7 +41,6 @@ export default function ProfilePage() {
         setIsSidebarOpen(width > 100);
       }
     };
-
     const interval = setInterval(checkSidebar, 300);
     return () => clearInterval(interval);
   }, []);
@@ -76,6 +82,31 @@ export default function ProfilePage() {
       })
       .catch((err) => console.error("Failed to fetch profile:", err));
   }, [username, token]);
+
+  // Fetch sidebar data
+  useEffect(() => {
+    if (!profile) return;
+
+    const fetchSidebarData = async () => {
+      try {
+        const [latest, top, joined] = await Promise.all([
+          axios(PROFILE.GET_LATEST_POSTS(username)),
+          axios(PROFILE.GET_TOP_POSTS(username)),
+          axios(PROFILE.GET_COMMUNITIES(username)),
+        ]);
+
+        setSidebarData({
+          latestPosts: latest.data.data || [],
+          topPosts: top.data.data || [],
+          communities: joined.data.data || [],
+        });
+      } catch (err) {
+        console.error("Failed to load sidebar data", err);
+      }
+    };
+
+    fetchSidebarData();
+  }, [profile]);
 
   // Load initial posts
   useEffect(() => {
@@ -141,23 +172,25 @@ export default function ProfilePage() {
     } else {
       document.body.classList.remove("overflow-hidden");
     }
-
     return () => document.body.classList.remove("overflow-hidden");
   }, [selectedPostId]);
 
-  // Render fallback
   if (!token) return null;
   if (!profile || isMine === null) {
-    return (
-      <div className="p-6 text-gray-400">
-        {PROFILE_PAGE.LOADING_MESSAGE}
-      </div>
-    );
+    return <div className="p-6 text-gray-400">{PROFILE_PAGE.LOADING_MESSAGE}</div>;
   }
 
-  // Final render
   return (
-    <MainLayout rightSidebar={<ProfileRightSidebar profile={profile} />}>
+    <MainLayout
+      rightSidebar={
+        <ProfileRightSidebar
+          profile={profile}
+          topLikedPosts={sidebarData.topPosts}
+          recentPosts={sidebarData.latestPosts}
+          joinedCommunities={sidebarData.communities}
+        />
+      }
+    >
       <div className="max-w-4xl p-2 text-black dark:text-white transition-colors duration-300">
         <ProfileHeader
           profile={profile}

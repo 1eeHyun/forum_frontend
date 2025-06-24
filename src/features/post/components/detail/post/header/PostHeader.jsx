@@ -32,19 +32,23 @@ export default function PostHeader({ title, author, createdAt, community }) {
             <ArrowLeft className={iconSize} />
           </button>
 
-          {community?.imageDTO?.imageUrl && (
-            <img
-              src={community.imageDTO.imageUrl}
-              alt={community.name}
-              className={`${communityAvatarSize} rounded-full object-cover`}
-            />
+          {community?.id && (
+            <>
+              {community.imageDTO?.imageUrl && (
+                <img
+                  src={community.imageDTO.imageUrl}
+                  alt={community.name}
+                  className={`${communityAvatarSize} rounded-full object-cover`}
+                />
+              )}
+              <span
+                className="text-blue-500 font-semibold hover:underline cursor-pointer"
+                onClick={handleCommunityClick}
+              >
+                {community.name}
+              </span>
+            </>
           )}
-          <span
-            className="text-blue-500 font-semibold hover:underline cursor-pointer"
-            onClick={handleCommunityClick}
-          >
-            {community?.name ?? "Unknown Community"}
-          </span>
         </div>
 
         {/* Right: Author */}
