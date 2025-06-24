@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
     "@stomp/stompjs": "^7.1.1",
     "@tailwindcss/line-clamp": "^0.4.4",
     "axios": "^1.10.0",

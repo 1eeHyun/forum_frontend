@@ -45,7 +45,7 @@ export default {
         card: "#e5e7eb",
         "card-hover": "#e5e7eb",
         "card-bg": "#f9fafb",
-        "home-sidebar-bg": "#f3f4f6",
+        "home-sidebar-bg": "#f3f4f6",        
 
         dark: {
           action: "#2a2c2f",

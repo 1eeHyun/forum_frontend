@@ -1,5 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Listbox, Transition } from "@headlessui/react";
+import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/20/solid";
+
 import { API } from "@/constants/apiRoutes";
 import {
   getMyCommunities,
@@ -8,6 +11,8 @@ import {
 } from "@post/services/postApi";
 
 import ImageUploadSection from "@post/components/create/ImageUploadSection";
+import CommunityRightSidebar from "@community/components/sidebar/CommunityRightSidebar";
+import MainLayout from "@/layout/MainLayout";
 
 export default function CreatePostPage() {
   const navigate = useNavigate();
@@ -27,14 +32,16 @@ export default function CreatePostPage() {
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
-  const [selectedPostId, setSelectedPostId] = useState(null);
+  const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [error, setError] = useState("");
   const [imageUrls, setImageUrls] = useState([]);
 
+  // 1. 커뮤니티 리스트 불러오기
   useEffect(() => {
     const fetchCommunities = async () => {
       try {
         const res = await getMyCommunities();
+        console.log("communities:", res.data.data);
         setJoinedCommunities(res.data.data);
       } catch (err) {
         console.error("Failed to load communities:", err);
@@ -43,7 +50,7 @@ export default function CreatePostPage() {
     fetchCommunities();
   }, []);
 
-  // If community is passed from state, set it in the form
+  // 2. location.state.community 값 반영
   useEffect(() => {
     if (communityFromState) {
       setForm((prev) => ({
@@ -51,6 +58,7 @@ export default function CreatePostPage() {
         visibility: "COMMUNITY",
         communityId: communityFromState.id,
       }));
+      setSelectedCommunity(communityFromState);
 
       getCategoriesByCommunityId(communityFromState.id)
         .then((res) => setCategories(res.data.data))
@@ -61,47 +69,63 @@ export default function CreatePostPage() {
     }
   }, [communityFromState]);
 
-  const handleChange = async (e) => {
-    const { name, value } = e.target;
-
-    if (name === "communityId") {
-      const communityId = value ? Number(value) : null;
-
-      setForm((prev) => ({
-        ...prev,
-        [name]: communityId,
-      }));
-
-      setSelectedCategoryId(null);
-      setCategories([]);
-
-      if (communityId) {
-        try {
-          const res = await getCategoriesByCommunityId(communityId);
-          setCategories(res.data.data);
-        } catch (err) {
-          console.error("Failed to load categories:", err);
-          setError("Failed to load categories.");
-        }
+  // 3. form.communityId와 selectedCommunity 동기화
+  useEffect(() => {
+    if (
+      form.visibility === "COMMUNITY" &&
+      form.communityId &&
+      joinedCommunities.length > 0
+    ) {
+      const found = joinedCommunities.find((c) => c.id === form.communityId);
+      if (found) {
+        setSelectedCommunity(found);
       }
-
-      return;
     }
+  }, [form.communityId, form.visibility, joinedCommunities]);
 
+  // 4. 커뮤니티 선택 핸들러
+  const handleSelectCommunity = async (community) => {
+    setSelectedCommunity(community);
+    setForm((prev) => ({
+      ...prev,
+      communityId: community?.id || null,
+    }));
+    setSelectedCategoryId(null);
+    setCategories([]);
+
+    if (community?.id) {
+      try {
+        const res = await getCategoriesByCommunityId(community.id);
+        setCategories(res.data.data);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+        setError("Failed to load categories.");
+      }
+    }
+  };
+
+  // 5. 폼 필드 변경 핸들러
+  const handleChange = (e) => {
+    const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
+  // 6. 폼 검증
   const validateForm = () => {
     if (!form.title.trim()) return "Title is required.";
-    if (form.title.length > TITLE_MAX) return `Title must be ${TITLE_MAX} characters or fewer.`;
-    if (form.content.length > CONTENT_MAX) return `Content must be ${CONTENT_MAX} characters or fewer.`;
-    if (form.visibility === "COMMUNITY" && !form.communityId) return "Please select a community.";
+    if (form.title.length > TITLE_MAX)
+      return `Title must be ${TITLE_MAX} characters or fewer.`;
+    if (form.content.length > CONTENT_MAX)
+      return `Content must be ${CONTENT_MAX} characters or fewer.`;
+    if (form.visibility === "COMMUNITY" && !form.communityId)
+      return "Please select a community.";
     return null;
   };
 
+  // 7. 폼 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -124,7 +148,7 @@ export default function CreatePostPage() {
     try {
       const res = await createPost(payload);
       const postId = res.data.data.id;
-      navigate(API.ROUTES.HOME, { state: { postId } });
+      navigate(`/post/${postId}`);
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.error;
       setError(msg || "Post failed");
@@ -132,146 +156,190 @@ export default function CreatePostPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-8 p-6 bg-[#0e1012] text-white rounded-md border border-gray-700 shadow space-y-6">
-      <div className="text-xl font-semibold">Create post</div>
+    <MainLayout
+      rightSidebar={
+        form.visibility === "COMMUNITY" && form.communityId ? (
+          <CommunityRightSidebar communityId={form.communityId} />
+        ) : null
+      }
+    >
+      <div className="w-full max-w-2xl mx-auto mt-10 px-4">
+        <div className="bg-card dark:bg-black border border-border dark:border-dark-card rounded-2xl shadow-md p-6 space-y-6 text-foreground dark:text-white">
+          <h2 className="text-2xl font-bold tracking-tight">Create a new post</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Visibility */}
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-semibold">Post visibility</label>
-          <select
-            name="visibility"
-            value={form.visibility}
-            onChange={handleChange}
-            className="px-4 py-2 bg-[#1a1c1f] border border-gray-600 rounded text-white"
-          >
-            <option value="PUBLIC">Public</option>
-            <option value="PRIVATE">Private</option>
-            <option value="COMMUNITY">Community</option>
-          </select>
-        </div>
-
-        {/* Community Selection */}
-        {form.visibility === "COMMUNITY" && (
-          <>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold">Select a community</label>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Visibility */}
+            <div>
+              <label className="block text-sm font-semibold mb-1">Post visibility</label>
               <select
-                name="communityId"
-                value={form.communityId || ""}
+                name="visibility"
+                value={form.visibility}
                 onChange={handleChange}
-                className="px-4 py-2 bg-[#1a1c1f] border border-gray-600 rounded text-white"
+                className="w-full px-4 py-2 rounded-lg border border-border dark:border-dark-card-bg bg-input-bg dark:bg-dark-action text-input-text dark:text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="">Choose a community</option>
-                {joinedCommunities.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
+                <option value="PUBLIC">Public</option>
+                <option value="PRIVATE">Private</option>
+                <option value="COMMUNITY">Community</option>
               </select>
             </div>
 
-            {/* If categories are loaded */}
-            {form.communityId && categories.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold">Select a category</label>
-                <select
-                  name="categoryId"
-                  value={selectedCategoryId || ""}
-                  onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
-                  className="px-4 py-2 bg-[#1a1c1f] border border-gray-600 rounded text-white"
-                >
-                  <option value="">Choose a category</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </option>
-                  ))}
-                </select>
+            {/* Community selection */}
+            {form.visibility === "COMMUNITY" && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Select a community</label>
+                  <Listbox value={selectedCommunity} onChange={handleSelectCommunity}>
+                    <div className="relative">
+                      <Listbox.Button className="w-full bg-input-bg dark:bg-dark-action text-input-text dark:text-white border border-border dark:border-dark-card-bg rounded-lg px-4 py-2 text-left flex items-center justify-between">
+                        <span className="flex items-center gap-2 truncate">
+                          {selectedCommunity?.imageDTO?.imageUrl && (
+                            <img
+                              src={selectedCommunity.imageDTO.imageUrl}
+                              className="w-6 h-6 rounded-full object-cover"
+                              alt="community"
+                            />
+                          )}
+                          <span className="truncate">{selectedCommunity?.name || "Choose a community"}</span>
+                        </span>
+                        <ChevronUpDownIcon className="h-5 w-5 text-muted dark:text-muted" />
+                      </Listbox.Button>
+                      <Transition
+                        as={Fragment}
+                        leave="transition ease-in duration-100"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                      >
+                        <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-card dark:bg-dark-card-bg py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                          {joinedCommunities.map((c) => (
+                            <Listbox.Option
+                              key={c.id}
+                              value={c}
+                              className={({ active }) =>
+                                `relative cursor-pointer select-none py-2 pl-10 pr-4 ${
+                                  active ? "bg-primary text-white" : "text-foreground dark:text-white"
+                                }`
+                              }
+                            >
+                              {({ selected }) => (
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    src={c.imageDTO?.imageUrl}
+                                    className="w-6 h-6 rounded-full object-cover"
+                                    alt={c.name}
+                                  />
+                                  <span className={`block truncate ${selected ? "font-semibold" : "font-normal"}`}>
+                                    {c.name}
+                                  </span>
+                                  {selected && (
+                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                                      <CheckIcon className="h-5 w-5 text-white" />
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </Listbox.Option>
+                          ))}
+                        </Listbox.Options>
+                      </Transition>
+                    </div>
+                  </Listbox>
+                </div>
+
+                {/* Category select */}
+                {form.communityId && categories.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">Select a category</label>
+                    <select
+                      name="categoryId"
+                      value={selectedCategoryId || ""}
+                      onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
+                      className="w-full px-4 py-2 rounded-lg border border-border dark:border-dark-card-bg bg-input-bg dark:bg-dark-action text-input-text dark:text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="">Choose a category</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {form.communityId && categories.length === 0 && (
+                  <p className="text-sm text-yellow-500 font-medium">
+                    This community has no categories. You cannot create a post in this community.
+                  </p>
+                )}
               </div>
             )}
 
-            {/* If no categories exist */}
-            {form.communityId && categories.length === 0 && (
-              <p className="text-sm text-yellow-400">
-                This community has no categories. You cannot create a post in this community.
-              </p>
+            {/* Title */}
+            <div className="relative">
+              <input
+                type="text"
+                name="title"
+                value={form.title}
+                onChange={handleChange}
+                maxLength={TITLE_MAX}
+                placeholder="Post title"
+                className="w-full px-4 py-3 rounded-lg border border-border dark:border-dark-card-bg bg-input-bg dark:bg-dark-action text-input-text dark:text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <span className="absolute bottom-2 right-3 text-xs text-muted-foreground dark:text-muted">
+                {form.title.length}/{TITLE_MAX}
+              </span>
+            </div>
+
+            {/* Content */}
+            <div className="relative">
+              <textarea
+                name="content"
+                value={form.content}
+                onChange={handleChange}
+                maxLength={CONTENT_MAX}
+                placeholder="Write your post content..."
+                rows={6}
+                className="w-full px-4 py-3 rounded-lg border border-border dark:border-dark-card-bg bg-input-bg dark:bg-dark-action text-input-text dark:text-white placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+              />
+              <span className="absolute bottom-2 right-3 text-xs text-muted-foreground dark:text-muted">
+                {form.content.length}/{CONTENT_MAX}
+              </span>
+            </div>
+
+            {/* Image Upload */}
+            <ImageUploadSection
+              imageUrls={imageUrls}
+              setImageUrls={setImageUrls}
+              setError={setError}
+            />
+
+            {/* Error */}
+            {error && (
+              <div className="text-red-500 text-sm text-center font-medium">{error}</div>
             )}
-          </>
-        )}
 
-        {/* Title Input */}
-        <div className="relative">
-          <input
-            type="text"
-            name="title"
-            value={form.title}
-            onChange={handleChange}
-            maxLength={TITLE_MAX}
-            placeholder="Title"
-            className="w-full px-4 py-3 bg-[#1a1c1f] border border-gray-600 rounded text-white"
-          />
-          <span className="absolute bottom-2 right-3 text-xs text-gray-400">
-            {form.title.length}/{TITLE_MAX}
-          </span>
+            {/* Actions */}
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                className="px-4 py-2 rounded-lg text-sm bg-muted text-white hover:bg-muted/80 transition"
+              >
+                Save Draft
+              </button>
+              <button
+                type="submit"
+                disabled={
+                  form.visibility === "COMMUNITY" &&
+                  form.communityId &&
+                  categories.length === 0
+                }
+                className="px-4 py-2 rounded-lg text-sm bg-primary text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition"
+              >
+                Post
+              </button>
+            </div>
+          </form>
         </div>
-
-        {/* Content Input */}
-        <div className="relative">
-          <textarea
-            name="content"
-            value={form.content}
-            onChange={handleChange}
-            maxLength={CONTENT_MAX}
-            placeholder="Body text (optional)"
-            rows={6}
-            className="w-full px-4 py-3 bg-[#1a1c1f] border border-gray-600 rounded text-white resize-none"
-          />
-          <span className="absolute bottom-2 right-3 text-xs text-gray-400">
-            {form.content.length}/{CONTENT_MAX}
-          </span>
-        </div>
-
-        {/* Image Upload */}
-        <ImageUploadSection
-          imageUrls={imageUrls}
-          setImageUrls={setImageUrls}
-          setError={setError}
-        />
-
-        {/* Error Message */}
-        {error && (
-          <p className="text-red-500 text-sm text-center font-medium">{error}</p>
-        )}
-
-        {/* Submit Buttons */}
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            className="px-4 py-2 bg-gray-700 rounded"
-          >
-            Save Draft
-          </button>
-          <button
-            type="submit"
-            disabled={
-              form.visibility === "COMMUNITY" &&
-              form.communityId &&
-              categories.length === 0
-            }
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Post
-          </button>
-        </div>
-      </form>
-
-      {selectedPostId && (
-        <PostDetailModal
-          postId={selectedPostId}
-          onClose={() => setSelectedPostId(null)}
-        />
-      )}
-    </div>
+      </div>
+    </MainLayout>
   );
 }
