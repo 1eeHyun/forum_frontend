@@ -5,5 +5,5 @@ export const PROFILE = {
     UPDATE_BIO: (username) => ({ method: "POST", url: `/profiles/${username}/bio` }),
     UPDATE_IMAGE: (username) => ({ method: "POST", url: `/profiles/${username}/image` }),
     GET_POSTS: (username) => ({ method: "GET", url: `/profiles/${username}/posts` }),
-  };
+};
   

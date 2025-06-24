@@ -2,61 +2,21 @@ import { useContext } from "react";
 import { ChatContext } from "@/context/ChatContext";
 import { useAuth } from "@/context/AuthContext";
 import {
-  formatDistanceToNowStrict,
-  differenceInSeconds,
-  differenceInHours,
-  format,
-} from "date-fns";
+  getRelativeTime,
+  getLastMessageAndTime,
+  getUnreadCount,
+} from "@/utils/chat";
 
 export default function MessageThreadList({ onSelectThread }) {
   const { threads } = useContext(ChatContext);
   const { username: currentUsername } = useAuth();
 
-  const calculateUnreadCount = (thread) => {
-    const lastReadId = thread.lastReadMessageId || 0;
-    const messages = thread.messages || [];
-    return messages.filter(
-      (msg) => msg.id > lastReadId && msg.senderUsername !== currentUsername
-    ).length;
-  };
-
-  const getLastMessage = (thread) => {
-    if (thread.lastMessage) return thread.lastMessage;
-    if (thread.messages?.length > 0)
-      return thread.messages[thread.messages.length - 1].content;
-    return "No messages yet";
-  };
-
-  const getLastMessageAt = (thread) => {
-    if (thread.lastMessageAt) return thread.lastMessageAt;
-    if (thread.messages?.length > 0)
-      return thread.messages[thread.messages.length - 1].sentAt;
-    return null;
-  };
-
-  const getRelativeTime = (dateString) => {
-    if (!dateString) return "";
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const secondsDiff = differenceInSeconds(now, date);
-    const hoursDiff = differenceInHours(now, date);
-
-    if (secondsDiff < 60) {
-      return formatDistanceToNowStrict(date, { unit: "second", addSuffix: true });
-    }
-
-    if (hoursDiff < 24) {
-      return formatDistanceToNowStrict(date, { addSuffix: true });
-    }
-
-    return format(date, "yyyy-MM-dd");
-  };
-
   return (
     <div className="overflow-auto">
       {threads.map((thread) => {
-        const unreadCount = calculateUnreadCount(thread);
+        const { content, time } = getLastMessageAndTime(thread);
+        const unreadCount = getUnreadCount(thread, currentUsername);
+
         return (
           <div
             key={thread.roomId}
@@ -69,6 +29,7 @@ export default function MessageThreadList({ onSelectThread }) {
           >
             <img
               src={thread.user.imageDto?.imageUrl || "/default.png"}
+              onError={(e) => { e.target.src = "/default.png"; }}
               className="w-10 h-10 rounded-full object-cover"
               alt="profile"
             />
@@ -82,12 +43,12 @@ export default function MessageThreadList({ onSelectThread }) {
                     <span className="w-3 h-3 rounded-full bg-red-500 inline-block" />
                   )}
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {getRelativeTime(getLastMessageAt(thread))}
+                    {getRelativeTime(time)}
                   </p>
                 </div>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                {getLastMessage(thread)}
+                {content}
               </p>
             </div>
           </div>

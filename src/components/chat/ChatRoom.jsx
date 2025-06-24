@@ -1,108 +1,35 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { ChatContext } from "@/context/ChatContext";
 import { useAuth } from "@/context/AuthContext";
 import { subscribeRoom, sendMessage } from "@/websocket/client";
+import { CHAT } from "@/constants/apiRoutes/chat";
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
-import axios from "@/api/axios";
 import ChatRoomMessageList from "./ChatRoomMessageList";
+import useChatMessages from "@/hooks/chat/useChatMessages";
+import useChatSubscription from "@/hooks/chat/useChatSubscription";
 
 export default function ChatRoom({ roomId, onClose }) {
   const { threads, setThreads } = useContext(ChatContext);
   const { username } = useAuth();
   const [input, setInput] = useState("");
 
-  const subscriptionRef = useRef(null);
   const scrollRef = useRef(null);
   const messageRefs = useRef({});
+  const subscriptionRef = useRef(null);
 
-  useEffect(() => {
-    axios.get(`/chat/rooms/${roomId}/messages`)
-      .then((res) => {
-        const { messages, lastReadMessageId: lastReadId } = res.data.data || {};
-        
-        const safeMessages = Array.isArray(messages) ? messages : [];
+  // Custom hook to fetch messages and mark as read
+  useChatMessages({ roomId, setThreads, scrollRef, messageRefs });
+  useChatSubscription({ roomId, setThreads, scrollRef });
 
-        setThreads((prev) =>
-          prev.map((thread) =>
-            thread.roomId === roomId
-              ? {
-                  ...thread,
-                  messages: safeMessages,
-                  lastMessage: safeMessages.at(-1)?.content || "No messages yet",
-                  lastMessageAt: safeMessages.at(-1)?.sentAt || null,
-                }
-              : thread
-          )
-        );
-        
-        const lastMessage = safeMessages.at(-1);            
-        const lastMessageId = lastMessage?.id;        
-
-        if (lastMessageId) {
-          axios.post(`/chat/rooms/${roomId}/read`, {
-            lastReadMessageId: lastMessageId,
-          })
-          .then(() => {            
-            setThreads((prev) =>
-              prev.map((thread) =>
-                thread.roomId === roomId
-                  ? {
-                      ...thread,
-                      lastReadMessageId: lastMessageId,
-                    }
-                  : thread
-              )
-            );
-          })
-          .catch((err) => {
-            console.error("Failed to mark messages as read", err);
-          });
-        }
-
-        setTimeout(() => {
-          const targetMsg = safeMessages.find(msg => msg.id > lastReadId);
-          const targetRef = targetMsg ? messageRefs.current[targetMsg.id] : null;
-
-          if (targetRef) {
-            targetRef.scrollIntoView({ behavior: "smooth", block: "center" });
-          } else {
-            scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-          }
-        }, 150);
-      })
-      .catch((err) => console.error("Failed to fetch messages", err));
-  }, [roomId, setThreads]);
-
-  useEffect(() => {
-    subscriptionRef.current = subscribeRoom(roomId, (msg) => {
-      setThreads((prev) =>
-        prev.map((thread) =>
-          thread.roomId === roomId
-            ? {
-                ...thread,
-                messages: [...(thread.messages || []), msg],
-                lastMessage: msg.content,
-                lastMessageAt: msg.sentAt,
-              }
-            : thread
-        )
-      );
-      setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    });
-
-    return () => subscriptionRef.current?.unsubscribe();
-  }, [roomId, setThreads]);
-
+  // Send message
   const handleSend = () => {
-    if (input.trim()) {
-      sendMessage(roomId, {
-        content: input,
-        sentAt: new Date().toISOString(),
-      });
-      setInput("");
-    }
+    if (!input.trim()) return;
+    sendMessage(roomId, {
+      content: input.trim(),
+      sentAt: new Date().toISOString(),
+    });
+    setInput("");
   };
 
   const thread = threads.find((t) => t.roomId === roomId);

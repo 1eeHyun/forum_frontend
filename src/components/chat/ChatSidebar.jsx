@@ -4,7 +4,7 @@ import MessageThreadList from "./MessageThreadList";
 import NewMessageModal from "./NewMessageModal";
 import ChatRoom from "./ChatRoom";
 import { ChatContext } from "@/context/ChatContext";
-import axios from "@/api/axios";
+import initializeChatThread from "@/hooks/chat/useChatThreadInitializer";
 
 export default function ChatSidebar({ isOpen, onClose }) {
   const [showNewMessage, setShowNewMessage] = useState(false);
@@ -12,7 +12,6 @@ export default function ChatSidebar({ isOpen, onClose }) {
   const sidebarRef = useRef(null);
   const modalRef = useRef(null);
   const { threads, setThreads } = useContext(ChatContext);
-  const currentUsername = localStorage.getItem("username");
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -30,41 +29,13 @@ export default function ChatSidebar({ isOpen, onClose }) {
   }, [onClose]);
 
   const handleSelectThread = async (roomId, user = null) => {
-    const exists = threads.some((t) => t.roomId === roomId);
-
-    if (!exists) {
-      try {
-        const res = await axios.get(`/chat/rooms/${roomId}/messages`);
-        const messages = Array.isArray(res.data.data) ? res.data.data : [];
-
-        const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-
-        setThreads((prev) => [
-          ...prev,
-          {
-            roomId,
-            user,
-            messages,
-            lastMessage: lastMessage?.content || "No messages yet",
-            lastMessageAt: lastMessage?.sentAt || null,
-          },
-        ]);
-      } catch (err) {
-        console.error("Failed to fetch messages", err);
-        setThreads((prev) => [
-          ...prev,
-          {
-            roomId,
-            user,
-            messages: [],
-            lastMessage: "No messages yet",
-            lastMessageAt: null,
-          },
-        ]);
-      }
-    }
-
+    await initializeChatThread(roomId, user, threads, setThreads); 
     setCurrentRoomId(roomId);
+  };
+
+  const handleSelectUser = async (user, roomId) => {
+    await handleSelectThread(roomId, user);
+    setShowNewMessage(false);
   };
 
   return (
@@ -110,18 +81,11 @@ export default function ChatSidebar({ isOpen, onClose }) {
       </div>
 
       {isOpen && showNewMessage && !currentRoomId && (
-        <div
-          className="fixed bottom-20 right-[424px] z-50
-            transform transition-all duration-300 ease-in-out
-            translate-y-0 opacity-100"
-        >
+        <div className="fixed bottom-20 right-[424px] z-50 transition duration-300 ease-in-out">
           <NewMessageModal
             modalRef={modalRef}
             onClose={() => setShowNewMessage(false)}
-            onSelectUser={(user, roomId) => {
-              handleSelectThread(roomId, user);
-              setShowNewMessage(false);
-            }}
+            onSelectUser={handleSelectUser}
           />
         </div>
       )}

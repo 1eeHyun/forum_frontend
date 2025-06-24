@@ -1,45 +1,28 @@
+import axios from "@/api/axios";
+import { CHAT } from "@/constants/apiRoutes/chat";
+import { ChatContext } from "@/context/ChatContext";
 import { useEffect, useRef, useState, useContext } from "react";
 import { ArrowLeft, Send } from "lucide-react";
-import axios from "@/api/axios";
-import { PROFILE, AUTH } from "@/constants/apiRoutes";
-import { ChatContext } from "@/context/ChatContext";
+
+import useFetchUsers from "@/hooks/chat/useFetchUsers";
 
 export default function NewMessageModal({ modalRef, onClose, onSelectUser }) {
   const [search, setSearch] = useState("");
-  const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const inputRef = useRef();
   const { setThreads } = useContext(ChatContext);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (search.trim() === "") {
-          const { data: { data: me } } = await axios(AUTH.ME);
-          const { method, url } = PROFILE.GET(me.username);
-          const res = await axios({ method, url });
-          setUsers(res.data.data.followings || []);
-        } else {
-          const res = await axios.get(`/search/users?keyword=${encodeURIComponent(search)}`);
-          setUsers(res.data.data || []);
-        }
-      } catch (err) {
-        console.error("Search failed", err);
-      }
-    };
-
-    const delay = setTimeout(fetchData, 300); // debounce
-    return () => clearTimeout(delay);
-  }, [search]);
+  const users = useFetchUsers(search);
 
   const handleSend = async () => {
     if (!selectedUser) return;
 
     try {
-      const { data: { data: me } } = await axios(AUTH.ME);
-      const res = await axios.post("/chat/rooms", {
-        user1Username: me.username,
-        user2Username: selectedUser.username,
+      const res = await axios({
+        ...CHAT.CREATE_ROOM,
+        data: {
+          user2Username: selectedUser.username,
+        },
       });
 
       const roomId = res.data.data;
@@ -110,6 +93,9 @@ export default function NewMessageModal({ modalRef, onClose, onSelectUser }) {
             <div className="flex items-center gap-3">
               <img
                 src={user.imageDto?.imageUrl || "/default.png"}
+                onError={(e) => {
+                  e.target.src = "/default.png";
+                }}
                 alt="profile"
                 className="w-8 h-8 rounded-full object-cover"
               />

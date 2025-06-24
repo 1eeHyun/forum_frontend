@@ -1,15 +1,7 @@
-import { useEffect, useState } from "react";
-import axios from "@/api/axios";
+import useFetchChatMessages from "@/hooks/chat/useFetchChatMessages";
 
 export default function ChatWindow({ roomId }) {
-  const [messages, setMessages] = useState([]);
-
-  useEffect(() => {
-    axios
-      .get(`/chat/rooms/${roomId}/messages`)
-      .then((res) => setMessages(res.data.data))
-      .catch((err) => console.error("Failed to fetch messages", err));
-  }, [roomId]);
+  const { messages, error } = useFetchChatMessages(roomId);
 
   return (
     <div
@@ -19,10 +11,16 @@ export default function ChatWindow({ roomId }) {
         dark:bg-[#121416] dark:text-white
       "
     >
-      {messages.map((msg, i) => (
-        <div key={i} className="mb-1">
-          <strong className="font-semibold">{msg.senderNickname}</strong>:{" "}
-          {msg.content}
+      {error && <div className="text-red-500 text-sm mb-2">{error}</div>}
+
+      {messages.length === 0 && !error && (
+        <div className="text-gray-500 italic">No messages yet.</div>
+      )}
+
+      {messages.map((msg) => (
+        <div key={`msg-${msg.id ?? `${msg.senderUsername}-${msg.sentAt}`}`} className="mb-1">
+          <span className="font-semibold">{msg.senderNickname}</span>:{" "}
+          <span>{msg.content}</span>
         </div>
       ))}
     </div>
