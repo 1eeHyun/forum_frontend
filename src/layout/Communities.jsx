@@ -6,6 +6,7 @@ import { COMMUNITIES } from "@/constants/apiRoutes";
 export default function Communities() {
   const [communities, setCommunities] = useState([]);
   const navigate = useNavigate();
+  const communitiesExist = Array.isArray(communities) && communities.length > 0;
 
   useEffect(() => {
     async function fetchCommunities() {
@@ -24,13 +25,18 @@ export default function Communities() {
 
   return (
     <div>
-      {Array.isArray(communities) && communities.length > 0 ? (
+      {communitiesExist ? (
         communities.map((community) => (
           <button
             key={community.id}
-            className="block my-1"
+            className="flex items-center my-1 py-1"
             onClick={() => navigate(`/communities/${community.id}`)}
           >
+            <img
+            src={community.imageDTO?.imageUrl}
+            alt={community.name}
+            className="w-6 h-6 rounded mr-2 object-cover"
+            />
             {community.name}
           </button>
         ))
