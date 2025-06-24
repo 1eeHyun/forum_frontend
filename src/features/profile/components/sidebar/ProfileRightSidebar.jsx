@@ -5,29 +5,40 @@ import axios from "@/api/axios";
 import SidebarCardWrapper from "@/components/sidebar/cards/SidebarCardWrapper";
 import TopPostCard from "@/components/sidebar/cards/TopPostCard";
 import CommunityPreviewCard from "@community/components/common/CommunityPreviewCard";
+import ProfileInfoCard from "@profile/components/sidebar/cards/ProfileInfoCard";
 import { PROFILE_SIDEBAR_SECTION_TITLES } from "@/constants/labels/sidebarLabels";
+import { PROFILE } from "@/constants/apiRoutes/profile";
 
 export default function ProfileRightSidebar() {
   const { username } = useParams();
 
-  const [latestPosts, setLatestPosts] = useState([]);
-  const [topPosts, setTopPosts] = useState([]);
-  const [communities, setCommunities] = useState([]);
+  const [sidebarData, setSidebarData] = useState({
+    topPosts: [],
+    latestPosts: [],
+    communities: [],
+  });
+
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     if (!username) return;
 
     const fetchData = async () => {
       try {
-        const [latest, top, joined] = await Promise.all([
-          axios.get(`/profiles/${username}/posts?sort=newest&page=0&size=5`),
-          axios.get(`/profiles/${username}/posts?sort=top&page=0&size=5`),
-          axios.get(`/profiles/${username}/communities`),
+        const [latest, top, joined, profileRes] = await Promise.all([
+          axios(PROFILE.GET_LATEST_POSTS(username)),
+          axios(PROFILE.GET_TOP_POSTS(username)),
+          axios(PROFILE.GET_COMMUNITIES(username)),
+          axios(PROFILE.GET(username)),
         ]);
 
-        setLatestPosts(latest.data.data || []);
-        setTopPosts(top.data.data || []);
-        setCommunities(joined.data.data || []);
+        setSidebarData({
+          latestPosts: latest.data.data || [],
+          topPosts: top.data.data || [],
+          communities: joined.data.data || [],
+        });
+
+        setProfile(profileRes.data.data);
       } catch (err) {
         console.error("Failed to load profile sidebar data", err);
       }
@@ -36,38 +47,40 @@ export default function ProfileRightSidebar() {
     fetchData();
   }, [username]);
 
+  const sections = [
+    {
+      title: PROFILE_SIDEBAR_SECTION_TITLES.TOP_LIKED_POSTS,
+      items: sidebarData.topPosts,
+      renderItem: (item) => <TopPostCard key={item.id} post={item} />,
+      emptyText: "No top posts.",
+    },
+    {
+      title: PROFILE_SIDEBAR_SECTION_TITLES.RECENT_POSTS,
+      items: sidebarData.latestPosts,
+      renderItem: (item) => <TopPostCard key={item.id} post={item} />,
+      emptyText: "No recent posts.",
+    },
+    {
+      title: PROFILE_SIDEBAR_SECTION_TITLES.JOINED_COMMUNITIES,
+      items: sidebarData.communities,
+      renderItem: (item) => <CommunityPreviewCard key={item.id} community={item} />,
+      emptyText: "No joined communities.",
+    },
+  ];
+
   return (
     <div className="space-y-6 pl-6 h-full">
-      {/* Top liked posts */}
-      <SidebarCardWrapper title={PROFILE_SIDEBAR_SECTION_TITLES.TOP_LIKED_POSTS}>
-        {topPosts.length > 0 ? (
-          topPosts.map((post) => <TopPostCard key={post.id} post={post} />)
-        ) : (
-          <p className="text-gray-500 text-sm italic">No top posts.</p>
-        )}
-      </SidebarCardWrapper>
+      {profile && <ProfileInfoCard profile={profile} />}
 
-      {/* Recent posts */}
-      <SidebarCardWrapper title={PROFILE_SIDEBAR_SECTION_TITLES.RECENT_POSTS}>
-        {latestPosts.length > 0 ? (
-          latestPosts.map((post) => <TopPostCard key={post.id} post={post} />)
-        ) : (
-          <p className="text-gray-500 text-sm italic">No recent posts.</p>
-        )}
-      </SidebarCardWrapper>
-
-      {/* Joined communities */}
-      <SidebarCardWrapper title={PROFILE_SIDEBAR_SECTION_TITLES.JOINED_COMMUNITIES}>
-        {communities.length > 0 ? (
-          <div className="space-y-2">
-            {communities.map((community) => (
-              <CommunityPreviewCard key={community.id} community={community} />
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500 text-sm italic">No joined communities.</p>
-        )}
-      </SidebarCardWrapper>
+      {sections.map(({ title, items, renderItem, emptyText }) => (
+        <SidebarCardWrapper key={title} title={title}>
+          {items.length > 0 ? (
+            <div className="space-y-2">{items.map(renderItem)}</div>
+          ) : (
+            <p className="text-gray-500 text-sm italic">{emptyText}</p>
+          )}
+        </SidebarCardWrapper>
+      ))}
     </div>
   );
 }

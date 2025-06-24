@@ -2,6 +2,7 @@ import { useRef, useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchProfile, fetchProfilePosts } from "@profile/services/profileApi";
 import { ROUTES } from "@/constants/apiRoutes/routes";
+import { PROFILE_PAGE } from "@/constants/profile/pageConstants";
 
 import ProfileHeader from "@profile/components/ProfileHeader";
 import ProfilePostList from "@profile/components/ProfilePostList";
@@ -21,7 +22,7 @@ export default function ProfilePage() {
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [sortOption, setSortOption] = useState("newest");
+  const [sortOption, setSortOption] = useState(PROFILE_PAGE.DEFAULT_SORT);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Detect if sidebar is open based on <aside> width
@@ -38,16 +39,19 @@ export default function ProfilePage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Redirect if no token
   useEffect(() => {
     if (!token) navigate(ROUTES.LOGIN);
   }, [token, navigate]);
 
+  // Fetch profile
   useEffect(() => {
     if (!token) return;
 
     fetchProfile(username)
       .then((res) => {
         const {
+          username,
           nickname,
           bio,
           imageDTO,
@@ -58,6 +62,7 @@ export default function ProfilePage() {
         } = res.data.data;
 
         setProfile({
+          username,
           nickname,
           bio,
           imageDTO,
@@ -72,14 +77,20 @@ export default function ProfilePage() {
       .catch((err) => console.error("Failed to fetch profile:", err));
   }, [username, token]);
 
+  // Load initial posts
   useEffect(() => {
     if (!token || !profile) return;
 
     const loadInitialPosts = async () => {
       try {
-        const res = await fetchProfilePosts(username, sortOption, 0, 10);
+        const res = await fetchProfilePosts(
+          username,
+          sortOption,
+          0,
+          PROFILE_PAGE.PAGE_SIZE
+        );
         setPosts(res.data.data);
-        setHasMore(res.data.data.length === 10);
+        setHasMore(res.data.data.length === PROFILE_PAGE.PAGE_SIZE);
         setPage(1);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
@@ -89,6 +100,7 @@ export default function ProfilePage() {
     loadInitialPosts();
   }, [profile, sortOption]);
 
+  // Infinite scroll
   const lastPostRef = useCallback(
     (node) => {
       if (observer.current) observer.current.disconnect();
@@ -106,17 +118,23 @@ export default function ProfilePage() {
 
   const loadMore = async () => {
     try {
-      const res = await fetchProfilePosts(username, sortOption, page, 10);
+      const res = await fetchProfilePosts(
+        username,
+        sortOption,
+        page,
+        PROFILE_PAGE.PAGE_SIZE
+      );
       const postList = res.data.data;
 
       setPosts((prev) => [...prev, ...postList]);
-      setHasMore(postList.length === 10);
+      setHasMore(postList.length === PROFILE_PAGE.PAGE_SIZE);
       setPage((prev) => prev + 1);
     } catch (err) {
       console.error("Failed to load more posts:", err);
     }
   };
 
+  // Modal scroll lock
   useEffect(() => {
     if (selectedPostId) {
       document.body.classList.add("overflow-hidden");
@@ -127,12 +145,19 @@ export default function ProfilePage() {
     return () => document.body.classList.remove("overflow-hidden");
   }, [selectedPostId]);
 
+  // Render fallback
   if (!token) return null;
-  if (!profile || isMine === null)
-    return <div className="p-6 text-gray-400">Loading profile...</div>;
+  if (!profile || isMine === null) {
+    return (
+      <div className="p-6 text-gray-400">
+        {PROFILE_PAGE.LOADING_MESSAGE}
+      </div>
+    );
+  }
 
+  // Final render
   return (
-    <MainLayout rightSidebar={<ProfileRightSidebar />}>
+    <MainLayout rightSidebar={<ProfileRightSidebar profile={profile} />}>
       <div className="max-w-4xl p-2 text-black dark:text-white transition-colors duration-300">
         <ProfileHeader
           profile={profile}
@@ -141,10 +166,12 @@ export default function ProfilePage() {
           posts={posts}
           setProfile={setProfile}
         />
-  
-        <h3 className="text-xxl text-center font-semibold mt-auto mb-3">POSTS</h3>
+
+        <h3 className="text-xxl text-center font-semibold mt-auto mb-3">
+          {PROFILE_PAGE.SECTION_TITLES.POSTS}
+        </h3>
         <div className="w-full h-px bg-gray-300 dark:bg-white/10 mb-4" />
-  
+
         <ProfilePostList
           posts={posts}
           onPostClick={setSelectedPostId}
@@ -153,5 +180,5 @@ export default function ProfilePage() {
         />
       </div>
     </MainLayout>
-  );  
+  );
 }

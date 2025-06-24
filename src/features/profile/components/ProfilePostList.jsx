@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import { Images, Heart, MessageCircle } from "lucide-react";
 
-export default function ProfilePostList({ posts, onPostClick, lastPostRef, isSidebarOpen }) {
+export default function ProfilePostList({ posts, lastPostRef, isSidebarOpen }) {
+  const navigate = useNavigate();
+
   if (posts.length === 0) {
     return <p className="text-gray-500 dark:text-gray-400 italic">No posts available.</p>;
   }
@@ -16,7 +19,7 @@ export default function ProfilePostList({ posts, onPostClick, lastPostRef, isSid
           key={post.id}
           ref={idx === posts.length - 1 ? lastPostRef : null}
           className="relative bg-gray-100 dark:bg-[#2b2f33] min-h-[250px] rounded shadow overflow-hidden cursor-pointer hover:shadow-lg transition group p-4 text-black dark:text-white"
-          onClick={() => onPostClick(post.id)}
+          onClick={() => navigate(`/post/${post.id}`)}
         >
           {/* Hover Overlay */}
           <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
