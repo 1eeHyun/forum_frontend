@@ -1,11 +1,12 @@
 import { useRef, useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { fetchProfile, fetchProfilePosts } from "@profile/services/profileApi";
-import { ROUTES } from "@/constants/api/routes";
+import { ROUTES } from "@/constants/apiRoutes/routes";
 
 import ProfileHeader from "@profile/components/ProfileHeader";
 import ProfilePostList from "@profile/components/ProfilePostList";
-import PostDetailModal from "@post/components/detail/post/modal/PostDetailModal";
+import MainLayout from "@/layout/MainLayout";
+import ProfileRightSidebar from "../components/sidebar/ProfileRightSidebar";
 
 export default function ProfilePage() {
   const { username } = useParams();
@@ -21,13 +22,26 @@ export default function ProfilePage() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [sortOption, setSortOption] = useState("newest");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  // Redirect to login if not authenticated
+  // Detect if sidebar is open based on <aside> width
+  useEffect(() => {
+    const checkSidebar = () => {
+      const aside = document.querySelector("aside");
+      if (aside) {
+        const width = parseInt(aside.style.width || "0", 10);
+        setIsSidebarOpen(width > 100);
+      }
+    };
+
+    const interval = setInterval(checkSidebar, 300);
+    return () => clearInterval(interval);
+  }, []);
+
   useEffect(() => {
     if (!token) navigate(ROUTES.LOGIN);
   }, [token, navigate]);
 
-  // Fetch profile data on mount or when username changes
   useEffect(() => {
     if (!token) return;
 
@@ -43,7 +57,6 @@ export default function ProfilePage() {
           followings,
         } = res.data.data;
 
-        // Store profile data and ownership status
         setProfile({
           nickname,
           bio,
@@ -53,13 +66,12 @@ export default function ProfilePage() {
           postCount: totalPostCount,
         });
 
-        setPostCount(totalPostCount); 
+        setPostCount(totalPostCount);
         setIsMine(Boolean(isMe));
       })
       .catch((err) => console.error("Failed to fetch profile:", err));
   }, [username, token]);
 
-  // Load initial posts after profile is fetched
   useEffect(() => {
     if (!token || !profile) return;
 
@@ -67,7 +79,7 @@ export default function ProfilePage() {
       try {
         const res = await fetchProfilePosts(username, sortOption, 0, 10);
         setPosts(res.data.data);
-        setHasMore(res.data.data.length === 10); // Check if there are more posts to load
+        setHasMore(res.data.data.length === 10);
         setPage(1);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
@@ -77,12 +89,9 @@ export default function ProfilePage() {
     loadInitialPosts();
   }, [profile, sortOption]);
 
-  // Intersection observer for infinite scroll
   const lastPostRef = useCallback(
     (node) => {
-      if (observer.current) {
-        observer.current.disconnect();
-      }
+      if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
@@ -90,14 +99,11 @@ export default function ProfilePage() {
         }
       });
 
-      if (node) {
-        observer.current.observe(node);
-      }
+      if (node) observer.current.observe(node);
     },
     [hasMore, page, sortOption]
   );
 
-  // Load more posts when reaching bottom
   const loadMore = async () => {
     try {
       const res = await fetchProfilePosts(username, sortOption, page, 10);
@@ -111,8 +117,6 @@ export default function ProfilePage() {
     }
   };
 
-
-  // Disable scroll when modal is open
   useEffect(() => {
     if (selectedPostId) {
       document.body.classList.add("overflow-hidden");
@@ -120,42 +124,34 @@ export default function ProfilePage() {
       document.body.classList.remove("overflow-hidden");
     }
 
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
+    return () => document.body.classList.remove("overflow-hidden");
   }, [selectedPostId]);
 
-  // Render loading state
   if (!token) return null;
   if (!profile || isMine === null)
     return <div className="p-6 text-gray-400">Loading profile...</div>;
 
-  // Render profile page
   return (
-    <div className="max-w-4xl p-10">
-      <ProfileHeader
-        profile={profile}
-        username={username}
-        isMine={isMine}
-        posts={posts}
-        setProfile={setProfile}
-      />
-
-      <h3 className="text-xxl text-center font-semibold mt-auto mb-3">POSTS</h3>
-      <div className="w-full h-px bg-white/10 mb-4" />
-
-      <ProfilePostList
-        posts={posts}
-        onPostClick={setSelectedPostId}
-        lastPostRef={lastPostRef}
-      />
-
-      {selectedPostId && (
-        <PostDetailModal
-          postId={selectedPostId}
-          onClose={() => setSelectedPostId(null)}
+    <MainLayout rightSidebar={<ProfileRightSidebar />}>
+      <div className="max-w-4xl p-2 text-black dark:text-white transition-colors duration-300">
+        <ProfileHeader
+          profile={profile}
+          username={username}
+          isMine={isMine}
+          posts={posts}
+          setProfile={setProfile}
         />
-      )}
-    </div>
-  );
+  
+        <h3 className="text-xxl text-center font-semibold mt-auto mb-3">POSTS</h3>
+        <div className="w-full h-px bg-gray-300 dark:bg-white/10 mb-4" />
+  
+        <ProfilePostList
+          posts={posts}
+          onPostClick={setSelectedPostId}
+          lastPostRef={lastPostRef}
+          isSidebarOpen={isSidebarOpen}
+        />
+      </div>
+    </MainLayout>
+  );  
 }

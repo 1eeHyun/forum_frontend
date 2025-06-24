@@ -15,4 +15,10 @@ export const COMMUNITY_SIDEBAR_SECTION_TITLES = {
   USERS_ONLINE: "Users Online",
   NO_DATA_AVAILABLE: "No data available.",
 };
+
+export const PROFILE_SIDEBAR_SECTION_TITLES = {
+  TOP_LIKED_POSTS: "Top Liked Posts",
+  RECENT_POSTS: "Recent Posts",
+  JOINED_COMMUNITIES: "Joined Communities",
+};
   
