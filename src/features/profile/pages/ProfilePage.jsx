@@ -4,18 +4,23 @@ import { fetchProfile, fetchProfilePosts } from "@/features/profile/services/pro
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import { PROFILE_PAGE } from "@/constants/profile/pageConstants";
 import { PROFILE } from "@/constants/apiRoutes/profile";
+import axios from "@/api/axios";
 
 import ProfileHeader from "@/features/profile/components/ProfileHeader";
 import ProfilePostList from "@/features/profile/components/ProfilePostList";
 import MainLayout from "@/layout/MainLayout";
 import ProfileRightSidebar from "@/features/profile/components/sidebar/ProfileRightSidebar";
-import axios from "@/api/axios";
+
+const SIDEBAR_WIDTH_THRESHOLD = 100;
+const SIDEBAR_CHECK_INTERVAL = 300;
+const DEFAULT_WIDTH_STRING = "0";
+const BODY_SCROLL_LOCK_CLASS = "overflow-hidden";
 
 export default function ProfilePage() {
   const { username } = useParams();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const observer = useRef();
+  const observer = useRef(null);
 
   const [profile, setProfile] = useState(null);
   const [isMine, setIsMine] = useState(null);
@@ -32,25 +37,23 @@ export default function ProfilePage() {
     communities: [],
   });
 
-  // Detect if sidebar is open based on <aside> width
-  useEffect(() => {
-    const checkSidebar = () => {
-      const aside = document.querySelector("aside");
-      if (aside) {
-        const width = parseInt(aside.style.width || "0", 10);
-        setIsSidebarOpen(width > 100);
-      }
-    };
-    const interval = setInterval(checkSidebar, 300);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Redirect if no token
   useEffect(() => {
     if (!token) navigate(ROUTES.LOGIN);
   }, [token, navigate]);
 
-  // Fetch profile
+  useEffect(() => {
+    const checkSidebar = () => {
+      const aside = document.querySelector("aside");
+      if (aside) {
+        const width = parseInt(aside.style.width || DEFAULT_WIDTH_STRING, 10);
+        setIsSidebarOpen(width > SIDEBAR_WIDTH_THRESHOLD);
+      }
+    };
+
+    const intervalId = setInterval(checkSidebar, SIDEBAR_CHECK_INTERVAL);
+    return () => clearInterval(intervalId);
+  }, []);
+
   useEffect(() => {
     if (!token) return;
 
@@ -74,16 +77,14 @@ export default function ProfilePage() {
           imageDTO,
           followers,
           followings,
-          postCount: totalPostCount,
+          totalPostCount,
         });
-
         setPostCount(totalPostCount);
         setIsMine(Boolean(isMe));
       })
       .catch((err) => console.error("Failed to fetch profile:", err));
   }, [username, token]);
 
-  // Fetch sidebar data
   useEffect(() => {
     if (!profile) return;
 
@@ -106,9 +107,8 @@ export default function ProfilePage() {
     };
 
     fetchSidebarData();
-  }, [profile]);
+  }, [profile, username]);
 
-  // Load initial posts
   useEffect(() => {
     if (!token || !profile) return;
 
@@ -129,25 +129,9 @@ export default function ProfilePage() {
     };
 
     loadInitialPosts();
-  }, [profile, sortOption]);
+  }, [profile, sortOption, token, username]);
 
-  // Infinite scroll
-  const lastPostRef = useCallback(
-    (node) => {
-      if (observer.current) observer.current.disconnect();
-
-      observer.current = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && hasMore) {
-          loadMore();
-        }
-      });
-
-      if (node) observer.current.observe(node);
-    },
-    [hasMore, page, sortOption]
-  );
-
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     try {
       const res = await fetchProfilePosts(
         username,
@@ -155,24 +139,34 @@ export default function ProfilePage() {
         page,
         PROFILE_PAGE.PAGE_SIZE
       );
-      const postList = res.data.data;
+      const newPosts = res.data.data;
 
-      setPosts((prev) => [...prev, ...postList]);
-      setHasMore(postList.length === PROFILE_PAGE.PAGE_SIZE);
+      setPosts((prev) => [...prev, ...newPosts]);
+      setHasMore(newPosts.length === PROFILE_PAGE.PAGE_SIZE);
       setPage((prev) => prev + 1);
     } catch (err) {
       console.error("Failed to load more posts:", err);
     }
-  };
+  }, [username, sortOption, page]);
 
-  // Modal scroll lock
+  const lastPostRef = useCallback(
+    (node) => {
+      if (observer.current) observer.current.disconnect();
+
+      observer.current = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting && hasMore) {
+          loadMore();
+        }
+      });
+
+      if (node) observer.current.observe(node);
+    },
+    [hasMore, loadMore]
+  );
+
   useEffect(() => {
-    if (selectedPostId) {
-      document.body.classList.add("overflow-hidden");
-    } else {
-      document.body.classList.remove("overflow-hidden");
-    }
-    return () => document.body.classList.remove("overflow-hidden");
+    document.body.classList.toggle(BODY_SCROLL_LOCK_CLASS, Boolean(selectedPostId));
+    return () => document.body.classList.remove(BODY_SCROLL_LOCK_CLASS);
   }, [selectedPostId]);
 
   if (!token) return null;
