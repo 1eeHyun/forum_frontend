@@ -71,7 +71,7 @@ export default function NotificationDropdown({ token }) {
     <div ref={dropdownRef} className="relative">
       <button
         onClick={() => setShowDropdown((prev) => !prev)}
-        className="relative p-2 mt-1 rounded-full hover:bg-action-hover dark:hover:bg-dark-action-hover transition"
+        className="relative p-2 mt-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition"
       >
         <Bell className="text-black dark:text-white" />
         {unreadCount > 0 && (
@@ -82,7 +82,7 @@ export default function NotificationDropdown({ token }) {
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 mt-2 w-dropdown bg-white dark:bg-dark-card-bg border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden animate-scale-in">
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-dark-card-bg border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden animate-scale-in">
           {/* Header */}
           <div className="p-4 text-sm font-semibold border-b border-gray-200 dark:border-gray-700 text-black dark:text-white flex justify-between items-center">
             Notifications
@@ -95,7 +95,7 @@ export default function NotificationDropdown({ token }) {
           </div>
 
           {/* Scrollable List */}
-          <div className="max-h-notification-list overflow-y-auto">
+          <div className="max-h-96 overflow-y-auto bg-white dark:bg-dark-card-bg">
             {notifications.length === 0 ? (
               <div className="p-4 text-gray-500 dark:text-gray-400 text-sm text-center">
                 No notifications
@@ -107,8 +107,8 @@ export default function NotificationDropdown({ token }) {
                   onClick={() => handleNavigate(n.notificationId)}
                   className={`px-4 py-3 text-sm border-b border-gray-100 dark:border-gray-700 cursor-pointer transition ${
                     !n.isRead
-                      ? "bg-notification-unread"
-                      : "hover:bg-action-hover dark:hover:bg-dark-action-hover"
+                      ? "bg-gray-100 dark:bg-gray-800"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-700"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -116,7 +116,7 @@ export default function NotificationDropdown({ token }) {
                       className="w-9 h-9 rounded-full border border-gray-300 dark:border-gray-600 bg-cover bg-center"
                       style={{
                         backgroundImage: `url(${n.sender.profileImage?.imageUrl})`,
-                        backgroundPosition: `${n.sender.profileImage?.imagePositionX ?? 50}% ${n.sender.imageDTO?.imagePositionY ?? 50}%`,
+                        backgroundPosition: `${n.sender.profileImage?.imagePositionX ?? 50}% ${n.sender.profileImage?.imagePositionY ?? 50}%`,
                       }}
                     ></div>
                     <div className="flex-1">
