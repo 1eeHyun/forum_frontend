@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/constants/apiRoutes/routes";
-import { POST_LABELS } from "@/constants/labels/postLabels";
+import { POST_LABELS } from "@/features/post/constants/postLabels";
 
 export default function RelatedPostCard({ post }) {
   const navigate = useNavigate();

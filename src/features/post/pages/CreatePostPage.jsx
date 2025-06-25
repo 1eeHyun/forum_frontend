@@ -18,21 +18,20 @@ import ErrorMessage from "@post/components/create/ErrorMessage";
 import { PrimaryButton, SecondaryButton } from "@post/components/create/Buttons";
 import CommunitySelector from "@post/components/create/CommunitySelector";
 
+import {
+  TITLE_MAX,
+  CONTENT_MAX,
+  POST_VISIBILITY_OPTIONS,
+  DEFAULT_FORM,
+} from "@post/constants/postConstants";
+import { POST_LABELS, POST_ERRORS } from "@post/constants/postLabels";
+
 export default function CreatePostPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const communityFromState = location.state?.community;
 
-  const TITLE_MAX = 150;
-  const CONTENT_MAX = 5000;
-
-  const [form, setForm] = useState({
-    title: "",
-    content: "",
-    visibility: "PUBLIC",
-    communityId: null,
-  });
-
+  const [form, setForm] = useState(DEFAULT_FORM);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
@@ -112,13 +111,10 @@ export default function CreatePostPage() {
   };
 
   const validateForm = () => {
-    if (!form.title.trim()) return "Title is required.";
-    if (form.title.length > TITLE_MAX)
-      return `Title must be ${TITLE_MAX} characters or fewer.`;
-    if (form.content.length > CONTENT_MAX)
-      return `Content must be ${CONTENT_MAX} characters or fewer.`;
-    if (form.visibility === "COMMUNITY" && !form.communityId)
-      return "Please select a community.";
+    if (!form.title.trim()) return POST_ERRORS.TITLE_REQUIRED;
+    if (form.title.length > TITLE_MAX) return POST_ERRORS.TITLE_TOO_LONG(TITLE_MAX);
+    if (form.content.length > CONTENT_MAX) return POST_ERRORS.CONTENT_TOO_LONG(CONTENT_MAX);
+    if (form.visibility === "COMMUNITY" && !form.communityId) return POST_ERRORS.COMMUNITY_REQUIRED;
     return null;
   };
 
@@ -147,7 +143,7 @@ export default function CreatePostPage() {
       navigate(`/post/${postId}`);
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.error;
-      setError(msg || "Post failed");
+      setError(msg || POST_ERRORS.POST_FAILED);
     }
   };
 
@@ -161,19 +157,15 @@ export default function CreatePostPage() {
     >
       <div className="w-full max-w-2xl mx-auto mt-10 px-4">
         <div className="bg-card dark:bg-black border border-border dark:border-dark-card rounded-2xl shadow-md p-6 space-y-6 text-foreground dark:text-white">
-          <h2 className="text-2xl font-bold tracking-tight">Create a new post</h2>
+          <h2 className="text-2xl font-bold tracking-tight">{POST_LABELS.CREATE_POST_HEADING}</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <SelectInput
-              label="Post visibility"
+              label={POST_LABELS.VISIBILITY}
               name="visibility"
               value={form.visibility}
               onChange={handleChange}
-              options={[
-                { value: "PUBLIC", label: "Public" },
-                { value: "PRIVATE", label: "Private" },
-                { value: "COMMUNITY", label: "Community" },
-              ]}
+              options={POST_VISIBILITY_OPTIONS}
             />
 
             {form.visibility === "COMMUNITY" && (
@@ -186,12 +178,12 @@ export default function CreatePostPage() {
 
                 {form.communityId && categories.length > 0 && (
                   <SelectInput
-                    label="Select a category"
+                    label={POST_LABELS.SELECT_CATEGORY}
                     name="categoryId"
                     value={selectedCategoryId || ""}
                     onChange={(e) => setSelectedCategoryId(Number(e.target.value))}
                     options={[
-                      { value: "", label: "Choose a category" },
+                      { value: "", label: POST_LABELS.CHOOSE_CATEGORY },
                       ...categories.map((cat) => ({ value: cat.id, label: cat.name })),
                     ]}
                   />
@@ -199,30 +191,29 @@ export default function CreatePostPage() {
 
                 {form.communityId && categories.length === 0 && (
                   <p className="text-sm text-yellow-500 font-medium">
-                    This community has no categories. You cannot create a post in this
-                    community.
+                    {POST_LABELS.NO_CATEGORY_WARNING}
                   </p>
                 )}
               </>
             )}
 
             <TextInput
-              label="Post title"
+              label={POST_LABELS.TITLE}
               name="title"
               value={form.title}
               onChange={handleChange}
               maxLength={TITLE_MAX}
-              placeholder="Post title"
+              placeholder={POST_LABELS.TITLE}
               showCount
             />
 
             <TextareaInput
-              label="Content"
+              label={POST_LABELS.CONTENT}
               name="content"
               value={form.content}
               onChange={handleChange}
               maxLength={CONTENT_MAX}
-              placeholder="Write your post content..."
+              placeholder={`Write your ${POST_LABELS.CONTENT.toLowerCase()}...`}
               rows={6}
               showCount
             />
