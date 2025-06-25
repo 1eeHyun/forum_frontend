@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import { POST_LABELS } from "@/features/post/constants/postLabels";
 
-export default function TopPostCard({ post, fromCommunity = false }) {
+export default function TopPostCard({ post }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [visible, setVisible] = useState(true);
@@ -13,35 +13,40 @@ export default function TopPostCard({ post, fromCommunity = false }) {
   if (!visible) return null;
 
   const thumbnail = post.imageUrls?.[0];
-  const communityImage = post.community?.imageDTO?.imageUrl ?? post.communityProfilePicture?.imageUrl;
-  const communityImageX = post.community?.imageDTO?.imagePositionX ?? 50;
-  const communityImageY = post.community?.imageDTO?.imagePositionY ?? 50;
 
-  const authorImage = post.author?.profileImage?.imageUrl;
-  const authorImageX = post.author?.profileImage?.imagePositionX ?? 50;
-  const authorImageY = post.author?.profileImage?.imagePositionY ?? 50;
+  // Community info
+  const community = post.community;
+  const communityImage = community?.imageDTO?.imageUrl || post.communityProfilePicture?.imageUrl;
+  const communityImageX = community?.imageDTO?.imagePositionX ?? 50;
+  const communityImageY = community?.imageDTO?.imagePositionY ?? 50;
 
-  const showAuthorOnly = fromCommunity || !post.community?.name;
+  // Author info
+  const author = post.author;
+  const authorImage = author?.profileImage?.imageUrl;
+  const authorImageX = author?.profileImage?.imagePositionX ?? 50;
+  const authorImageY = author?.profileImage?.imagePositionY ?? 50;
 
   const openPost = () => {
-    const searchParams = new URLSearchParams(location.search);
-    searchParams.set("postId", post.id);
-    navigate({ pathname: location.pathname, search: searchParams.toString() });
+    navigate(`/post/${post.id}`);
   };
 
   const openProfile = (e) => {
     e.stopPropagation();
-    navigate(ROUTES.PROFILE(post.author?.username));
+    if (author?.username) {
+      navigate(ROUTES.PROFILE(author.username));
+    }
   };
 
   const openCommunity = (e) => {
     e.stopPropagation();
-    if (post.community?.id) {
-      navigate(ROUTES.COMMUNITY(post.community.id));
+    if (community?.id) {
+      navigate(ROUTES.COMMUNITY(community.id));
     } else if (post.communityId) {
       navigate(ROUTES.COMMUNITY(post.communityId));
     }
   };
+
+  const hasCommunity = Boolean(community?.name);
 
   return (
     <div
@@ -67,39 +72,18 @@ export default function TopPostCard({ post, fromCommunity = false }) {
         <img
           src={thumbnail}
           alt="thumbnail"
-          className="w-32 h-32 rounded-md object-cover flex-shrink-0"
+          className="w-32 h-32 rounded-md object-cover flex-shrink-0 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            window.open(thumbnail, "_blank");
+            openPost(); // changed: go to post detail
           }}
         />
       )}
 
       {/* Text content */}
       <div className="flex flex-col justify-between text-sm text-muted w-full">
-        {/* Author or Community Info */}
         <div className="flex items-center gap-2 mb-1">
-          {showAuthorOnly ? (
-            <>
-              {authorImage && (
-                <img
-                  src={authorImage}
-                  alt="author"
-                  onClick={openProfile}
-                  className="w-6 h-6 rounded-full object-cover border border-card hover:ring-2 hover:ring-primary transition cursor-pointer"
-                  style={{
-                    objectPosition: `${authorImageX}% ${authorImageY}%`,
-                  }}
-                />
-              )}
-              <span
-                onClick={openProfile}
-                className="text-sm hover:underline hover:text-primary cursor-pointer transition"
-              >
-                {post.author?.nickname}
-              </span>
-            </>
-          ) : (
+          {hasCommunity ? (
             <>
               {communityImage && (
                 <img
@@ -116,13 +100,33 @@ export default function TopPostCard({ post, fromCommunity = false }) {
                 onClick={openCommunity}
                 className="text-sm text-primary hover:underline cursor-pointer font-medium transition"
               >
-                {post.community.name}
+                {community.name}
               </span>
               <span
                 onClick={openProfile}
                 className="text-xs hover:underline hover:text-primary cursor-pointer transition"
               >
-                {POST_LABELS.AUTHOR_PREFIX} {post.author?.nickname}
+                {POST_LABELS.AUTHOR_PREFIX} {author?.nickname}
+              </span>
+            </>
+          ) : (
+            <>
+              {authorImage && (
+                <img
+                  src={authorImage}
+                  alt="author"
+                  onClick={openProfile}
+                  className="w-6 h-6 rounded-full object-cover border border-card hover:ring-2 hover:ring-primary transition cursor-pointer"
+                  style={{
+                    objectPosition: `${authorImageX}% ${authorImageY}%`,
+                  }}
+                />
+              )}
+              <span
+                onClick={openProfile}
+                className="text-sm hover:underline hover:text-primary cursor-pointer transition"
+              >
+                {author?.nickname}
               </span>
             </>
           )}
