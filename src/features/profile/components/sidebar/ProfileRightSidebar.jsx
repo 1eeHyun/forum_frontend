@@ -8,6 +8,7 @@ import CommunityPreviewCard from "@community/components/common/CommunityPreviewC
 import ProfileInfoCard from "@profile/components/sidebar/cards/ProfileInfoCard";
 import { PROFILE_SIDEBAR_SECTION_TITLES } from "@/constants/labels/sidebarLabels";
 import { PROFILE } from "@/constants/apiRoutes/profile";
+import RelatedPostCard from "@/components/sidebar/cards/RelatedPostCard";
 
 export default function ProfileRightSidebar({
   profile: initialProfile = null,
@@ -75,7 +76,7 @@ export default function ProfileRightSidebar({
     {
       title: PROFILE_SIDEBAR_SECTION_TITLES.RECENT_POSTS,
       items: sidebarData.latestPosts,
-      renderItem: (item) => <TopPostCard key={item.id} post={item} />,
+      renderItem: (item) => <RelatedPostCard key={item.id} post={item} />,
       emptyText: "No recent posts.",
     },
     {
