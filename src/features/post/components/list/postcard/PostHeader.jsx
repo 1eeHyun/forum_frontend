@@ -20,7 +20,7 @@ export default function PostHeader({ post }) {
           <Link
             to={ROUTES.COMMUNITY(post.community.id)}
             onClick={(e) => e.stopPropagation()}
-            className="text-sm text-gray-500 font-medium hover:underline"
+            className="text-sm text-gray-700 dark:text-gray-200 font-medium hover:underline"
           >
             {post.community.name}
           </Link>
@@ -30,7 +30,7 @@ export default function PostHeader({ post }) {
       )}
 
       {/* Author Info + Time */}
-      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <Link
           to={ROUTES.PROFILE(post.author.username)}
           onClick={(e) => e.stopPropagation()}

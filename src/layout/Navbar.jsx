@@ -98,12 +98,14 @@ export default function Navbar({ onToggleSidebar }) {
         <button onClick={onToggleSidebar} className="hover:text-purple-400 transition">
           <Menu size={ICON_SIZES.MD} />
         </button>
+
         <h1
           className={NAVBAR_STYLES.TITLE}
           onClick={() => navigate(ROUTES.HOME)}
         >
           {NAVBAR_LABELS.TITLE}
         </h1>
+        
       </div>
 
       {/* Center Section */}
