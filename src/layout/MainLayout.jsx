@@ -12,7 +12,7 @@ const getInitialSidebarState = () => {
   return stored === null ? true : stored === "true";
 };
 
-export default function MainLayout({ children, rightSidebar }) {
+export default function MainLayout({ children, rightSidebar, noSidebar = false }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarState);
   const [chatOpen, setChatOpen] = useState(false);
 
@@ -22,14 +22,12 @@ export default function MainLayout({ children, rightSidebar }) {
   const sidebarWidth = isSidebarOpen ? 256 : 64;
   const currentUsername = localStorage.getItem("username");
 
-  // Save sidebar state to localStorage when toggled
   const toggleSidebar = () => {
     const nextState = !isSidebarOpen;
     setIsSidebarOpen(nextState);
     localStorage.setItem("leftSidebarOpen", nextState.toString());
   };
 
-  // Calculate total unread messages across all threads
   const totalUnreadCount = threads.reduce((count, thread) => {
     const lastReadId = thread.lastReadMessageId || 0;
     const messages = thread.messages || [];
@@ -41,30 +39,27 @@ export default function MainLayout({ children, rightSidebar }) {
 
   return (
     <div className="min-h-screen bg-card-bg text-black dark:bg-card-bg dark:text-white transition-colors">
-      {/* Top navbar */}
       <Navbar onToggleSidebar={toggleSidebar} />
 
-      {/* Left sidebar */}
-      <aside
-        className={`
-          fixed top-14 left-0 h-[calc(100vh-56px)] p-4 hidden md:flex flex-col
-          border-r border-card bg-card-bg transition-all duration-300
-        `}
-        style={{ width: `${sidebarWidth}px` }}
-      >
-        <LeftSidebar isOpen={isSidebarOpen} />
-      </aside>
+      {!noSidebar && (
+        <aside
+          className={`
+            fixed top-14 left-0 h-[calc(100vh-56px)] p-4 hidden md:flex flex-col
+            border-r border-card bg-card-bg transition-all duration-300
+          `}
+          style={{ width: `${sidebarWidth}px` }}
+        >
+          <LeftSidebar isOpen={isSidebarOpen} />
+        </aside>
+      )}
 
-      {/* Main content area */}
-      <div className="pt-14 flex justify-center" style={{ marginLeft: `${sidebarWidth}px` }}>
+      <div className="pt-14 flex justify-center" style={{ marginLeft: noSidebar ? 0 : `${sidebarWidth}px` }}>
         <div className="flex w-full max-w-[1500px] px-6 gap-2">
-          {/* Main page content */}
-          <main className={`flex-1 py-6 ${rightSidebar ? "max-w-[1200px]" : "max-w-[1500px]"}`}>
+          <main className={`flex-1 py-6 ${rightSidebar && !noSidebar ? "max-w-[1200px]" : "max-w-[1500px]"}`}>
             {children}
           </main>
 
-          {/* Optional right sidebar */}
-          {rightSidebar && (
+          {!noSidebar && rightSidebar && (
             <aside className="hidden lg:block w-[400px] p-4 space-y-4" style={{ marginTop: "40px" }}>
               {rightSidebar}
             </aside>
@@ -72,8 +67,7 @@ export default function MainLayout({ children, rightSidebar }) {
         </div>
       </div>
 
-      {/* Floating chat button and chat panel */}
-      {isLoggedIn && (
+      {isLoggedIn && !noSidebar && (
         <>
           <ChatFloatingButton
             onClick={() => setChatOpen((prev) => !prev)}
