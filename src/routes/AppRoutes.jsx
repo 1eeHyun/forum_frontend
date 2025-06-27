@@ -1,5 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 
+import SignupPage from "@/features/auth/pages/SignupPage";
+import LoginPage from "@/features/auth/pages/LoginPage";
+
 import HomePage from "@home/pages/HomePage";
 import PrivateRoute from "./PrivateRoute";
 
@@ -20,6 +23,9 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/login" element={<LoginPage />} />
 
       <Route path="/communities/:id" element={<CommunityDetailPage />} />
       <Route path="/communities/:id/manage" element={<CommunityManagePage />} />

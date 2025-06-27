@@ -1,6 +1,7 @@
 export const ROUTES = {
     HOME: "/",    
     SIGNUP: "/signup",
+    LOGIN: "/login",
     POST: "/posts",
   
     POST_DETAIL: (postId) => `/post/${postId}`,
