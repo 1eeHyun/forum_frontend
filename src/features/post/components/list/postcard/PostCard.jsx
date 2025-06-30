@@ -3,13 +3,15 @@ import PostHeader from "./PostHeader";
 import PostImageSlider from "./PostImageSlider";
 import PostContent from "./PostContent";
 import PostActions from "./PostActions";
+import { ROUTES } from "@/constants/apiRoutes/routes"
 
 export default function PostCard({ post }) {
   const navigate = useNavigate();
   const hasImages = post.imageUrls && post.imageUrls.length > 0;
 
   const handleCardClick = () => {
-    navigate(`/post/${post.id}`);
+    navigate(ROUTES.POST_DETAIL(post.id));
+    // navigate(`/post/${post.id}`);
   };
 
   return (

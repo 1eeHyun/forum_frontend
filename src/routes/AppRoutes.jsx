@@ -30,7 +30,7 @@ export default function AppRoutes() {
       <Route path="/communities/:id" element={<CommunityDetailPage />} />
       <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
 
-      <Route path="/post/:id" element={<PostDetailPage />} />
+      <Route path="/posts/:id" element={<PostDetailPage />} />
 
       <Route
         path="/create-post"

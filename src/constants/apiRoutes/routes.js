@@ -4,9 +4,9 @@ export const ROUTES = {
     LOGIN: "/login",
     POST: "/posts",
   
-    POST_DETAIL: (postId) => `/post/${postId}`,
-    EDIT_POST: (postId) => `/post/${postId}/edit`,
-    POST_LIKE_USERS: (postId) => `/post/${postId}/likes`,
+    POST_DETAIL: (postId) => `/posts/${postId}`,
+    EDIT_POST: (postId) => `/posts/${postId}/edit`,
+    POST_LIKE_USERS: (postId) => `/posts/${postId}/likes`,
     BOOKMARKS: "/bookmarks",
   
     CREATE_POST: "/create-post",

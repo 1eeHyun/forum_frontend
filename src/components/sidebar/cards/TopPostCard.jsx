@@ -27,7 +27,7 @@ export default function TopPostCard({ post }) {
   const authorImageY = author?.profileImage?.imagePositionY ?? 50;
 
   const openPost = () => {
-    navigate(`/post/${post.id}`);
+    navigate(ROUTES.POST_DETAIL(post.id));
   };
 
   const openProfile = (e) => {

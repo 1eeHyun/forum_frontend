@@ -15,7 +15,7 @@ export default function RelatedPostCard({ post }) {
   const communityImage = post.communityProfilePicture?.imageUrl;
 
   const openPost = () => {
-    navigate(`/post/${post.id}`);
+    navigate(ROUTES.POST_DETAIL(post.id));
   };
 
   const openProfile = (e) => {
