@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "@/api/axios";
 import { useNavigate } from "react-router-dom";
 import { NOTIFICATIONS } from "@/constants/apiRoutes/notifications";
+import {ROUTES} from "@/constants/apiRoutes/routes"
 
 export default function NotificationDropdown({ token }) {
   const [notifications, setNotifications] = useState([]);
@@ -53,6 +54,15 @@ export default function NotificationDropdown({ token }) {
       const { method, url } = NOTIFICATIONS.RESOLVE(notificationId);
       const res = await axios({ method, url });
       const link = res.data.data.link;
+      
+      const urlObj = new URL(link, window.location.origin);
+      const postId = urlObj.searchParams.get("postId");
+
+      if (postId) {
+        navigate(ROUTES.POST_DETAIL(postId));
+      } else {
+        console.warn("Invalid notification link:", link);
+      }
 
       setNotifications((prev) =>
         prev.map((n) =>
@@ -60,7 +70,6 @@ export default function NotificationDropdown({ token }) {
         )
       );
       setUnreadCount((prev) => Math.max(prev - 1, 0));
-      navigate(link);
       setShowDropdown(false);
     } catch (err) {
       console.error("Failed to resolve notification link", err);
