@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
 import { MessageSquare } from "lucide-react";
-import { isUserLoggedIn } from "@/utils/authUtils";
+import { useAuth } from "@/context/AuthContext";
 
 const buttonBaseClass = `
   fixed bottom-6 right-6 w-14 h-14 rounded-full z-50 shadow-lg
@@ -17,11 +16,7 @@ const badgeClass = `
 export const MAX_UNREAD_COUNT_DISPLAY = 99;
 
 export default function ChatFloatingButton({ onClick, unreadCount = 0 }) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  useEffect(() => {
-    setIsLoggedIn(isUserLoggedIn());
-  }, []);
+  const { isLoggedIn } = useAuth(); // Reactively updates
 
   if (!isLoggedIn) return null;
 

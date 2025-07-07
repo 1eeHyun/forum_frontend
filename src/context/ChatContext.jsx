@@ -28,16 +28,19 @@ export function ChatProvider({ children }) {
       return;
     }
 
-    const fetchThreads = async () => {
-      try {
-        await axios(AUTH.ME); // Optional: verify user
+    let unsubscribeWebSocket = () => {};
+
+    const initializeChat = async () => {
+      try {        
+        await axios(AUTH.ME);
+        
         const roomsRes = await axios.get("/chat/rooms/my");
         const rooms = roomsRes.data.data;
 
         const threadsWithMessages = await Promise.all(
           rooms.map(async (room) => {
             const messagesRes = await axios.get(`/chat/rooms/${room.roomId}/messages`);
-            const { messages, lastReadMessageId } = messagesRes.data.data;            
+            const { messages, lastReadMessageId } = messagesRes.data.data;
 
             return {
               roomId: room.roomId,
@@ -49,41 +52,43 @@ export function ChatProvider({ children }) {
         );
 
         setThreads(threadsWithMessages);
+
+        // ✅ WebSocket 연결
+        unsubscribeWebSocket = connectWebSocket(token, (msg) => {
+          setThreads((prev) => {
+            const existingThread = prev.find((t) => t.roomId === msg.roomId);
+            if (existingThread) {
+              return prev.map((t) =>
+                t.roomId === msg.roomId
+                  ? { ...t, messages: [...t.messages, msg] }
+                  : t
+              );
+            } else {
+              return [
+                ...prev,
+                {
+                  roomId: msg.roomId,
+                  user: msg.senderProfile,
+                  messages: [msg],
+                  lastReadMessageId: 0,
+                },
+              ];
+            }
+          });
+        });
       } catch (err) {
-        console.error("Error fetching threads", err);
+        if (err.response?.status !== 401) {
+        }
         clearThreads();
       }
     };
 
-    fetchThreads();
+    initializeChat();
 
-    connectWebSocket(token, (msg) => {
-      setThreads((prev) => {
-        const existingThread = prev.find((t) => t.roomId === msg.roomId);
-        if (existingThread) {
-          return prev.map((t) =>
-            t.roomId === msg.roomId
-              ? {
-                  ...t,
-                  messages: [...t.messages, msg],
-                }
-              : t
-          );
-        } else {
-          return [
-            ...prev,
-            {
-              roomId: msg.roomId,
-              user: msg.senderProfile,
-              messages: [msg],
-              lastReadMessageId: 0,
-            },
-          ];
-        }
-      });
-    });
-
-    return () => disconnectWebSocket();
+    return () => {
+      disconnectWebSocket();
+      unsubscribeWebSocket?.();
+    };
   }, [token]);
 
   return (

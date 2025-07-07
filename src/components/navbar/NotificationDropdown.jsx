@@ -53,16 +53,9 @@ export default function NotificationDropdown({ token }) {
     try {
       const { method, url } = NOTIFICATIONS.RESOLVE(notificationId);
       const res = await axios({ method, url });
-      const link = res.data.data.link;
-      
-      const urlObj = new URL(link, window.location.origin);
-      const postId = urlObj.searchParams.get("postId");
+      const link = res.data.data.link;      
 
-      if (postId) {
-        navigate(ROUTES.POST_DETAIL(postId));
-      } else {
-        console.warn("Invalid notification link:", link);
-      }
+      navigate(link);
 
       setNotifications((prev) =>
         prev.map((n) =>

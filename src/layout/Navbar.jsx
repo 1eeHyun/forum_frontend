@@ -35,15 +35,15 @@ export default function Navbar({ onToggleSidebar }) {
   const { setIsLoggedIn } = useAuth();
   const { clearThreads } = useContext(ChatContext);
 
-  const { toggleTheme } = useTheme();
-
   const fetchUserInfo = async () => {
     try {
       const { method, url } = AUTH.ME;
       const res = await axios({ method, url });
       setUserInfo(res.data.data);
-    } catch (err) {
-      showErrorToast(NAVBAR_LABELS.FETCH_USER_ERROR);
+    } catch (err) {      
+      if (err.response?.status !== 401) {
+        showErrorToast(NAVBAR_LABELS.FETCH_USER_ERROR);
+      }
       setUserInfo(null);
     } finally {
       setLoading(false);

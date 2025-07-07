@@ -1,17 +1,17 @@
 import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
 
 let stompClient = null;
 let connected = false;
 
 export const connectWebSocket = (token, onMessageReceived) => {
-  const socket = new SockJS(
-    `${import.meta.env.VITE_API_BASE_URL.replace("/api", "")}/ws-chat?token=${encodeURIComponent(token)}`
-  );
+  const socketUrl = `ws://localhost:8080/ws-chat?token=${encodeURIComponent(token)}`;
 
   stompClient = new Client({
-    webSocketFactory: () => socket,
-    connectHeaders: { Authorization: `Bearer ${token}` },
+    brokerURL: socketUrl,
+    connectHeaders: {
+      Authorization: `Bearer ${token}`,
+    },
+    reconnectDelay: 5000,
     onConnect: () => {
       connected = true;
       
@@ -20,12 +20,15 @@ export const connectWebSocket = (token, onMessageReceived) => {
         onMessageReceived(parsed);
       });
     },
-    onStompError: (frame) => console.error("STOMP error", frame),
+    onStompError: (frame) => {      
+    },
+    onWebSocketClose: () => {
+      connected = false;      
+    },
+    debug: (str) => {
+      // console.log(`[STOMP DEBUG] ${str}`);
+    },
   });
-
-  stompClient.onWebSocketClose = () => {
-    connected = false;
-  };
 
   stompClient.activate();
 };
