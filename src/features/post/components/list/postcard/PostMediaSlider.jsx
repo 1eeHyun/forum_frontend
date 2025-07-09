@@ -1,31 +1,41 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function PostImageSlider({ images = [] }) {
+export default function PostMediaSlider({ files = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const next = (e) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    setCurrentIndex((prev) => (prev + 1) % files.length);
   };
 
   const prev = (e) => {
     e.stopPropagation();
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentIndex((prev) => (prev - 1 + files.length) % files.length);
   };
+
+  const currentFile = files[currentIndex];
 
   return (
     <div
-    className="relative w-full h-[300px] md:h-[500px] bg-[url('/bg/mosaic.png')] bg-repeat bg-center bg-gray-200 dark:bg-black overflow-hidden rounded-md mt-3"
+      className="relative w-full h-[300px] md:h-[500px] bg-[url('/bg/mosaic.png')] bg-repeat bg-center bg-gray-200 dark:bg-black overflow-hidden rounded-md mt-3"
       onClick={(e) => e.stopPropagation()}
     >
-      <img
-        src={images[currentIndex]}
-        alt={`slide-${currentIndex}`}
-        className="w-full h-full object-contain"
-      />
+      {currentFile?.type === "VIDEO" ? (
+        <video
+          src={currentFile.fileUrl}
+          controls
+          className="w-full h-full object-contain"
+        />
+      ) : (
+        <img
+          src={currentFile?.fileUrl}
+          alt={`slide-${currentIndex}`}
+          className="w-full h-full object-contain"
+        />
+      )}
 
-      {images.length > 1 && (
+      {files.length > 1 && (
         <>
           <button
             onClick={prev}
@@ -41,7 +51,7 @@ export default function PostImageSlider({ images = [] }) {
           </button>
 
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-            {images.map((_, idx) => (
+            {files.map((_, idx) => (
               <div
                 key={idx}
                 className={`w-2 h-2 rounded-full ${

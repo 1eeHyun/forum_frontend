@@ -130,7 +130,7 @@ export default function PostDetailPage() {
 
           <PostContent
             content={post.content}
-            imageUrls={post.imageUrls}
+            files={post.fileUrls} // [{ fileUrl, type }]
             likeUsers={post.likeUsers}
           />
 
