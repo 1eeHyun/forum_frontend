@@ -9,6 +9,7 @@ import PrivateRoute from "./PrivateRoute";
 import PostDetailPage from "@post/pages/PostDetailPage";
 import CreatePostPage from "@post/pages/CreatePostPage";
 
+import CreateCommunityPage from "@community/pages/CreateCommunityPage";
 import CommunityDetailPage from "@community/pages/CommunityDetailPage";
 import CommunityManagePage from "@community/pages/CommunityManagePage"; 
 
@@ -37,6 +38,15 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <CreatePostPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/create-community"
+        element={
+          <PrivateRoute>
+            <CreateCommunityPage />
           </PrivateRoute>
         }
       />
