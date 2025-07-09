@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { LoginModalContext } from "../providers/LoginModalProvider";
+import { LoginModalContext } from "@/features/auth/providers/LoginModalProvider";
 
 export default function useLoginModal() {
   const context = useContext(LoginModalContext);

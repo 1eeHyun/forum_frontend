@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowUp, ArrowDown, MessageCircle, Share } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import useLoginModal from "@/features/auth/hooks/useLoginModal";
+import useLoginModal from "@/hooks/auth/useLoginModal";
 
 export default function PostActions({ 
   post,

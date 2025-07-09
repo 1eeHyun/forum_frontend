@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, LogIn, MoreVertical, Moon } from "lucide-react";
+import { Menu, LogIn, MoreVertical, Moon, User } from "lucide-react";
 
 import { AUTH } from "@/constants/apiRoutes/auth";
 import { ROUTES } from "@/constants/apiRoutes/routes";
@@ -19,7 +19,6 @@ import NotificationDropdown from "@/components/navbar/NotificationDropdown";
 import ProfileDropdown from "@/components/navbar/ProfileDropdown";
 import ThemeToggleButton from "@/components/ThemeToggleButton"; 
 import LoginModal from "@/features/auth/components/LoginModal";
-import { useTheme } from "@/context/ThemeContext";
 
 export default function Navbar({ onToggleSidebar }) {
   const [userInfo, setUserInfo] = useState(null);
@@ -125,8 +124,9 @@ export default function Navbar({ onToggleSidebar }) {
           <>
             <button
               onClick={() => setShowLoginModal(true)}
-              className="text-sm font-medium px-4 py-1.5 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+              className="flex items-center gap-1 text-sm font-medium px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
             >
+              <User className="w-5 h-5" />
               {NAVBAR_LABELS.LOGIN}
             </button>
 
@@ -147,6 +147,7 @@ export default function Navbar({ onToggleSidebar }) {
                     }}
                     className={NAVBAR_STYLES.DROPDOWN_ITEM}
                   >
+                    
                     <LogIn size={ICON_SIZES.SM} /> {NAVBAR_LABELS.LOGIN_SIGNUP}
                   </button>
 

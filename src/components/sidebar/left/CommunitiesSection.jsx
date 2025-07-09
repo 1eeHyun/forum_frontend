@@ -4,9 +4,12 @@ import { ChevronDown, Plus, Settings, Star, Users } from "lucide-react";
 import axios from "@/api/axios";
 import { COMMUNITIES } from "@/constants/apiRoutes";
 
+const BATCH_SIZE = 5;
+
 export default function CommunitiesSection({ isOpen }) {
   const [communities, setCommunities] = useState([]);
   const [expanded, setExpanded] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,6 +26,10 @@ export default function CommunitiesSection({ isOpen }) {
 
     fetchCommunities();
   }, []);
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + BATCH_SIZE);
+  };
 
   if (!isOpen) {
     return (
@@ -70,7 +77,7 @@ export default function CommunitiesSection({ isOpen }) {
             Manage communities
           </button>
 
-          {communities.map((community) => (
+          {communities.slice(0, visibleCount).map((community) => (
             <button
               key={community.id}
               onClick={() => navigate(`/communities/${community.id}`)}
@@ -87,6 +94,16 @@ export default function CommunitiesSection({ isOpen }) {
               <Star className="w-4 h-4 text-muted-foreground" />
             </button>
           ))}
+
+          {/* More Button */}
+          {visibleCount < communities.length && (
+            <button
+              onClick={handleLoadMore}
+              className=" text-sm font-medium px-2 py-2 rounded-full dark:bg-gray-700 text-black dark:text-white hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+            >
+              See more
+            </button>
+          )}
         </>
       )}
     </div>

@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import axios from "@/api/axios";
 import { useAuth } from "@/context/AuthContext";
-import useLoginModal from "@/features/auth/hooks/useLoginModal";
+import useLoginModal from "@/hooks/auth/useLoginModal";
 import { POST_ROUTES } from "@/constants/apiRoutes";
 
 export default function PostStat({
