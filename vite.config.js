@@ -20,7 +20,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@layout': path.resolve(__dirname, './layout'),
+      '@layout': path.resolve(__dirname, './layout'),      
 
       '@auth': path.resolve(__dirname, './src/features/auth'),
       '@community': path.resolve(__dirname, './src/features/community'),
