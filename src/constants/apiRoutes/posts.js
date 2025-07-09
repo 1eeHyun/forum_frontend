@@ -2,7 +2,7 @@ export const POSTS = {
 
     FETCH_PAGINATED: { method: "GET", url: "/posts" },
     CREATE: { method: "POST", url: "/posts" },
-    UPLOAD_IMAGE: { method: "POST", url: "/posts/images" },
+    UPLOAD_FILE: { method: "POST", url: "/posts/upload" },
   
     DETAIL: (postId) => ({ method: "GET", url: `/posts/${postId}` }),
     UPDATE: (postId) => ({ method: "PUT", url: `/posts/${postId}` }),

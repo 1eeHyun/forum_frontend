@@ -12,7 +12,7 @@ export default function TopPostCard({ post }) {
 
   if (!visible) return null;
 
-  const thumbnail = post.imageUrls?.[0];
+  const thumbnail = post.fileUrls?.find((file) => file.type === "IMAGE")?.fileUrl;
 
   // Community info
   const community = post.community;
@@ -75,7 +75,7 @@ export default function TopPostCard({ post }) {
           className="w-32 h-32 rounded-md object-cover flex-shrink-0 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            openPost(); // changed: go to post detail
+            openPost();
           }}
         />
       )}

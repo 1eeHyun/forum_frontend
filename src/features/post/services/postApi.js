@@ -1,4 +1,3 @@
-// features/post/services/postApi.js
 import axios from "@/api/axios";
 
 import { POSTS } from "@/constants/apiRoutes";
@@ -12,6 +11,16 @@ export const createPost = (data) =>
 
 export const getPostDetail = (postId) => {
   const { method, url } = POSTS.DETAIL(postId);
+  return axios({ method, url });
+};
+
+export const updatePost = (postId, data) => {
+  const { method, url } = POSTS.UPDATE(postId);
+  return axios({ method, url, data });
+};
+
+export const deletePost = (postId) => {
+  const { method, url } = POSTS.DELETE(postId);
   return axios({ method, url });
 };
 
@@ -30,12 +39,17 @@ export const fetchMe = () =>
 export const getMyCommunities = () =>
   axios({ method: COMMUNITIES.MY.method, url: COMMUNITIES.MY.url });
 
-// Upload Image
-export const uploadPostImage = async (file) => {
+export const getCategoriesByCommunityId = (communityId) => {
+  const { method, url } = COMMUNITIES.CATEGORIES(communityId);
+  return axios({ method, url });
+};
+
+// Unified Upload API for Image & Video
+export const uploadMedia = async (file) => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const { method, url } = POSTS.UPLOAD_IMAGE;
+  const { method, url } = POSTS.UPLOAD_FILE;
 
   const res = await axios({
     method,
@@ -46,21 +60,5 @@ export const uploadPostImage = async (file) => {
     },
   });
 
-  return res.data.data; // S3 URL
+  return res;
 };
-
-export const updatePost = (postId, data) => {
-  const { method, url } = POSTS.UPDATE(postId);
-  return axios({ method, url, data });
-};
-
-export const deletePost = (postId) => {
-  const { method, url } = POSTS.DELETE(postId);
-  return axios({ method, url });
-};
-
-export const getCategoriesByCommunityId = (communityId) => {
-  const { method, url } = COMMUNITIES.CATEGORIES(communityId);
-  return axios({ method, url });
-};
-

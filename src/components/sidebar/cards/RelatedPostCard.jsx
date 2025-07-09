@@ -10,8 +10,8 @@ export default function RelatedPostCard({ post }) {
   const [visible, setVisible] = useState(true);
 
   if (!visible) return null;
-
-  const thumbnail = post.imageUrls?.[0];
+  
+  const thumbnail = post.fileUrls?.find((file) => file.type === "IMAGE")?.fileUrl;
   const communityImage = post.communityProfilePicture?.imageUrl;
 
   const openPost = () => {
@@ -60,7 +60,7 @@ export default function RelatedPostCard({ post }) {
           className="w-32 h-32 rounded-md object-cover flex-shrink-0 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            navigate(`/post/${post.id}`);
+            navigate(ROUTES.POST_DETAIL(post.id));
           }}
           onError={(e) => {
             e.target.onerror = null;

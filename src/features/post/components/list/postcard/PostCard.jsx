@@ -1,17 +1,22 @@
 import { useNavigate } from "react-router-dom";
 import PostHeader from "./PostHeader";
-import PostImageSlider from "./PostImageSlider";
+import PostMediaSlider from "./PostMediaSlider";
 import PostContent from "./PostContent";
 import PostActions from "./PostActions";
-import { ROUTES } from "@/constants/apiRoutes/routes"
+import { ROUTES } from "@/constants/apiRoutes/routes";
 
 export default function PostCard({ post }) {
   const navigate = useNavigate();
-  const hasImages = post.imageUrls && post.imageUrls.length > 0;
+  const hasFiles = post.fileUrls && post.fileUrls.length > 0;
+
+  {hasFiles ? (
+    <PostMediaSlider files={post.fileUrls} />
+  ) : (
+    <PostContent content={post.content} />
+  )}
 
   const handleCardClick = () => {
     navigate(ROUTES.POST_DETAIL(post.id));
-    // navigate(`/post/${post.id}`);
   };
 
   return (
@@ -32,8 +37,8 @@ export default function PostCard({ post }) {
         </h3>
       </div>
 
-      {hasImages ? (
-        <PostImageSlider images={post.imageUrls} />
+      {hasFiles ? (
+        <PostMediaSlider files={post.fileUrls} />
       ) : (
         <PostContent content={post.content} />
       )}

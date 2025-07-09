@@ -7,13 +7,13 @@ import {
   getCategoriesByCommunityId,
 } from "@post/services/postApi";
 
-import ImageUploadSection from "@post/components/create/ImageUploadSection";
+import MediaUploadSection from "@/features/post/components/create/upload/MediaUploadSection";
 import CommunityRightSidebar from "@community/components/sidebar/CommunityRightSidebar";
 import MainLayout from "@/layout/MainLayout";
 
-import SelectInput from "@post/components/create/SelectInput";
-import TextInput from "@post/components/create/TextInput";
-import TextareaInput from "@post/components/create/TextareaInput";
+import SelectInput from "@/features/post/components/create/input/SelectInput";
+import TextInput from "@/features/post/components/create/input/TextInput";
+import TextareaInput from "@/features/post/components/create/input/TextAreaInput";
 import ErrorMessage from "@post/components/create/ErrorMessage";
 import { PrimaryButton, SecondaryButton } from "@post/components/create/Buttons";
 import CommunitySelector from "@post/components/create/CommunitySelector";
@@ -37,7 +37,7 @@ export default function CreatePostPage() {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [selectedCommunity, setSelectedCommunity] = useState(null);
   const [error, setError] = useState("");
-  const [imageUrls, setImageUrls] = useState([]);
+  const [files, setFiles] = useState([]); // { fileUrl, type }
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -132,15 +132,15 @@ export default function CreatePostPage() {
       title: form.title.trim(),
       content: form.content.trim(),
       visibility: form.visibility,
-      imageUrls,
       communityId: form.visibility === "COMMUNITY" ? form.communityId : null,
       categoryId: selectedCategoryId,
+      fileUrls: files, // [{ fileUrl, type }]
     };
 
     try {
       const res = await createPost(payload);
       const postId = res.data.data.id;
-      navigate(`/post/${postId}`);
+      navigate(`/posts/${postId}`);
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.error;
       setError(msg || POST_ERRORS.POST_FAILED);
@@ -218,9 +218,9 @@ export default function CreatePostPage() {
               showCount
             />
 
-            <ImageUploadSection
-              imageUrls={imageUrls}
-              setImageUrls={setImageUrls}
+            <MediaUploadSection
+              files={files}
+              setFiles={setFiles}
               setError={setError}
             />
 
