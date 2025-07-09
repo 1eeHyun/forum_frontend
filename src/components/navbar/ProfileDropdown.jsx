@@ -8,7 +8,7 @@ import ThemeToggleButton from "@/components/ThemeToggleButton";
 const DROPDOWN_ITEM_STYLE =
   "flex items-center w-full px-4 py-2 text-sm text-black dark:text-white hover:bg-gray-100 dark:hover:bg-dark-card-hover transition";
 
-export default function ProfileDropdown({ userInfo, onSignOut }) {
+export default function ProfileDropdown({ userInfo }) {
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const profileRef = useRef();
   const navigate = useNavigate();
@@ -23,6 +23,12 @@ export default function ProfileDropdown({ userInfo, onSignOut }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleSignOut = () => {
+    localStorage.removeItem("token");
+    // 필요하면 여기서 전역 상태 초기화도 가능
+    window.location.reload();
+  };
+
   const imageUrl = userInfo?.profileImage?.imageUrl || "/default-profile.jpg";
   const positionX = userInfo?.profileImage?.imagePositionX ?? 50;
   const positionY = userInfo?.profileImage?.imagePositionY ?? 50;
@@ -31,7 +37,7 @@ export default function ProfileDropdown({ userInfo, onSignOut }) {
     <div ref={profileRef} className="relative">
       <div
         onClick={(e) => {
-          e.stopPropagation(); // Prevent event bubbling to dropdown items
+          e.stopPropagation();
           setShowProfileDropdown((p) => !p);
         }}
         className="w-10 h-10 rounded-full cursor-pointer border border-gray-300 dark:border-gray-600 bg-cover bg-center"
@@ -44,7 +50,7 @@ export default function ProfileDropdown({ userInfo, onSignOut }) {
       {showProfileDropdown && (
         <div
           className="absolute right-0 mt-2 w-44 bg-white dark:bg-dark-card-bg border border-gray-200 dark:border-gray-700 rounded shadow z-50 overflow-hidden"
-          onClick={(e) => e.stopPropagation()} // Prevent bubbling inside dropdown
+          onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={() => {
@@ -63,7 +69,7 @@ export default function ProfileDropdown({ userInfo, onSignOut }) {
 
           <button
             onClick={() => {
-              onSignOut();
+              handleSignOut();
               setShowProfileDropdown(false);
             }}
             className={DROPDOWN_ITEM_STYLE}
