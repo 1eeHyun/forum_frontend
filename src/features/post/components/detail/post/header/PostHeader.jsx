@@ -80,7 +80,6 @@ export default function PostHeader({
           </span>
           <span className="text-gray-400 text-sm">· {formatTimeAgo(createdAt)}</span>
 
-          {/* Tree dots menu */}
           <PostOptionsMenu
             authorUsername={author?.username}
             postId={postId}
