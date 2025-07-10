@@ -12,11 +12,14 @@ export default function TopPostCard({ post }) {
 
   if (!visible) return null;
 
-  const thumbnail = post.fileUrls?.find((file) => file.type === "IMAGE")?.fileUrl;
+  const thumbnailFile = post.fileUrls?.find(
+    (file) => file.type === "IMAGE" || file.type === "VIDEO"
+  );
 
   // Community info
   const community = post.community;
-  const communityImage = community?.imageDTO?.imageUrl || post.communityProfilePicture?.imageUrl;
+  const communityImage =
+    community?.imageDTO?.imageUrl || post.communityProfilePicture?.imageUrl;
   const communityImageX = community?.imageDTO?.imagePositionX ?? 50;
   const communityImageY = community?.imageDTO?.imagePositionY ?? 50;
 
@@ -51,7 +54,7 @@ export default function TopPostCard({ post }) {
   return (
     <div
       className={`relative rounded-lg p-3 transition cursor-pointer
-        ${thumbnail ? "flex flex-row-reverse gap-3 items-center" : "flex-col space-y-2"}
+        ${thumbnailFile ? "flex flex-row-reverse gap-3 items-center" : "flex-col space-y-2"}
         hover:bg-card-hover hover:scale-[1.01] dark:hover:bg-dark-card-hover
       `}
       onClick={openPost}
@@ -68,16 +71,29 @@ export default function TopPostCard({ post }) {
       </button>
 
       {/* Thumbnail */}
-      {thumbnail && (
-        <img
-          src={thumbnail}
-          alt="thumbnail"
-          className="w-32 h-32 rounded-md object-cover flex-shrink-0 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            openPost();
-          }}
-        />
+      {thumbnailFile && (
+        thumbnailFile.type === "IMAGE" ? (
+          <img
+            src={thumbnailFile.fileUrl}
+            alt="thumbnail"
+            className="w-32 h-32 rounded-md object-cover flex-shrink-0 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              openPost();
+            }}
+          />
+        ) : (
+          <video
+            src={thumbnailFile.fileUrl}
+            className="w-32 h-32 rounded-md object-cover flex-shrink-0 cursor-pointer"
+            muted
+            playsInline
+            onClick={(e) => {
+              e.stopPropagation();
+              openPost();
+            }}
+          />
+        )
       )}
 
       {/* Text content */}
