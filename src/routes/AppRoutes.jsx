@@ -8,6 +8,7 @@ import PrivateRoute from "./PrivateRoute";
 
 import PostDetailPage from "@post/pages/PostDetailPage";
 import CreatePostPage from "@post/pages/CreatePostPage";
+import EditPostPage from "@post/pages/EditPostPage";
 
 import CreateCommunityPage from "@community/pages/CreateCommunityPage";
 import CommunityDetailPage from "@community/pages/CommunityDetailPage";
@@ -38,6 +39,15 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <CreatePostPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/posts/:id/edit"
+        element={
+          <PrivateRoute>
+            <EditPostPage />
           </PrivateRoute>
         }
       />

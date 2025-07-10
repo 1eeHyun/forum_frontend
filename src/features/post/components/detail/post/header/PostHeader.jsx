@@ -8,7 +8,7 @@ const iconSize = "w-5 h-5";
 const avatarSize = "w-5 h-5";
 const communityAvatarSize = "w-7 h-7";
 
-export default function PostHeader({ title, author, createdAt, community }) {
+export default function PostHeader({ title, author, createdAt, community, postId }) {
   const navigate = useNavigate();
 
   const handleCommunityClick = () => {
@@ -72,7 +72,7 @@ export default function PostHeader({ title, author, createdAt, community }) {
           {/* Tree dots menu */}
           <PostOptionsMenu
             authorUsername={author?.username}
-            onEdit={() => console.log("Edit")}
+            postId={postId}            
             onDelete={() => console.log("Delete")}
             onReport={() => console.log("Report")}
             onFollow={() => console.log("Follow Author")}

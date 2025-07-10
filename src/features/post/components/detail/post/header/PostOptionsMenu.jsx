@@ -8,10 +8,13 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext"; // 실제 경로에 맞게 조정
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/apiRoutes/routes";
 
 export default function PostOptionsMenu({
   authorUsername,
+  postId,
   onEdit,
   onDelete,
   onReport,
@@ -22,6 +25,7 @@ export default function PostOptionsMenu({
   const [open, setOpen] = useState(false);
   const menuRef = useRef();
   const { username: loggedInUsername, isLoggedIn } = useAuth();
+  const navigate = useNavigate(); 
 
   const isOwner =
     isLoggedIn &&
@@ -55,7 +59,15 @@ export default function PostOptionsMenu({
         <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-600 rounded-md z-10">
           {isOwner ? (
             <>
-              <button className={menuItemStyle} onClick={() => { setOpen(false); onEdit?.(); }}>
+              <button className={menuItemStyle} 
+                onClick={() => {setOpen(false);
+                    if (postId) {
+                        navigate(ROUTES.POST_EDIT(postId));
+                    } else {
+                        onEdit?.(); // fallback
+                    }
+                }}
+              >
                 <Pencil className="w-4 h-4" />
                 Edit
               </button>

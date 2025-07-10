@@ -5,7 +5,7 @@ export const ROUTES = {
     POST: "/posts",
   
     POST_DETAIL: (postId) => `/posts/${postId}`,
-    EDIT_POST: (postId) => `/posts/${postId}/edit`,
+    POST_EDIT: (postId) => `/posts/${postId}/edit`,
     POST_LIKE_USERS: (postId) => `/posts/${postId}/likes`,
     BOOKMARKS: "/bookmarks",
   

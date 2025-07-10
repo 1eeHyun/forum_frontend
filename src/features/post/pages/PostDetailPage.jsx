@@ -126,6 +126,7 @@ export default function PostDetailPage() {
             author={post.author}
             createdAt={post.createdAt}
             community={post.community}
+            postId={post.id}
           />
 
           <PostContent
