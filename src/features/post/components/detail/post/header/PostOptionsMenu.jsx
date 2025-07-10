@@ -8,21 +8,14 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
-<<<<<<< HEAD
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/apiRoutes/routes";
-import ConfirmModal from "@/components/ui/ConfirmModal"; 
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function PostOptionsMenu({
   authorUsername,
   postId,
-=======
-import { useAuth } from "@/context/AuthContext"; // 실제 경로에 맞게 조정
-
-export default function PostOptionsMenu({
-  authorUsername,
->>>>>>> 7716fed (feat: Add PostOptionsMenu component with conditional owner vs viewer menu)
   onEdit,
   onDelete,
   onReport,
@@ -31,15 +24,10 @@ export default function PostOptionsMenu({
   onHide,
 }) {
   const [open, setOpen] = useState(false);
-<<<<<<< HEAD
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false); // confirm modal
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const menuRef = useRef();
   const { username: loggedInUsername, isLoggedIn } = useAuth();
   const navigate = useNavigate();
-=======
-  const menuRef = useRef();
-  const { username: loggedInUsername, isLoggedIn } = useAuth();
->>>>>>> 7716fed (feat: Add PostOptionsMenu component with conditional owner vs viewer menu)
 
   const isOwner =
     isLoggedIn &&
@@ -73,7 +61,6 @@ export default function PostOptionsMenu({
         <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-600 rounded-md z-10">
           {isOwner ? (
             <>
-<<<<<<< HEAD
               <button
                 className={menuItemStyle}
                 onClick={() => {
@@ -81,26 +68,19 @@ export default function PostOptionsMenu({
                   if (postId) {
                     navigate(ROUTES.POST_EDIT(postId));
                   } else {
-                    onEdit?.(); // fallback
+                    onEdit?.();
                   }
                 }}
               >
-=======
-              <button className={menuItemStyle} onClick={() => { setOpen(false); onEdit?.(); }}>
->>>>>>> 7716fed (feat: Add PostOptionsMenu component with conditional owner vs viewer menu)
                 <Pencil className="w-4 h-4" />
                 Edit
               </button>
               <button
                 className={`${menuItemStyle} text-red-500`}
-<<<<<<< HEAD
                 onClick={() => {
                   setOpen(false);
                   setIsConfirmOpen(true);
                 }}
-=======
-                onClick={() => { setOpen(false); onDelete?.(); }}
->>>>>>> 7716fed (feat: Add PostOptionsMenu component with conditional owner vs viewer menu)
               >
                 <Trash2 className="w-4 h-4" />
                 Delete
@@ -108,21 +88,42 @@ export default function PostOptionsMenu({
             </>
           ) : (
             <>
-              <button className={menuItemStyle} onClick={() => { setOpen(false); onFollow?.(); }}>
+              <button
+                className={menuItemStyle}
+                onClick={() => {
+                  setOpen(false);
+                  onFollow?.();
+                }}
+              >
                 <UserPlus className="w-4 h-4" />
                 Follow Author
               </button>
-              <button className={menuItemStyle} onClick={() => { setOpen(false); onSave?.(); }}>
+              <button
+                className={menuItemStyle}
+                onClick={() => {
+                  setOpen(false);
+                  onSave?.();
+                }}
+              >
                 <Bookmark className="w-4 h-4" />
                 Save
               </button>
-              <button className={menuItemStyle} onClick={() => { setOpen(false); onHide?.(); }}>
+              <button
+                className={menuItemStyle}
+                onClick={() => {
+                  setOpen(false);
+                  onHide?.();
+                }}
+              >
                 <EyeOff className="w-4 h-4" />
                 Hide
               </button>
               <button
                 className={`${menuItemStyle} text-red-500`}
-                onClick={() => { setOpen(false); onReport?.(); }}
+                onClick={() => {
+                  setOpen(false);
+                  onReport?.();
+                }}
               >
                 <Flag className="w-4 h-4" />
                 Report
@@ -131,9 +132,8 @@ export default function PostOptionsMenu({
           )}
         </div>
       )}
-<<<<<<< HEAD
 
-      {/* ConfirmModal rendering */}
+      {/* Confirm Modal for Delete */}
       <ConfirmModal
         open={isConfirmOpen}
         title="Delete Post"
@@ -141,11 +141,9 @@ export default function PostOptionsMenu({
         onCancel={() => setIsConfirmOpen(false)}
         onConfirm={() => {
           setIsConfirmOpen(false);
-          onDelete?.(); 
+          onDelete?.();
         }}
       />
-=======
->>>>>>> 7716fed (feat: Add PostOptionsMenu component with conditional owner vs viewer menu)
     </div>
   );
 }

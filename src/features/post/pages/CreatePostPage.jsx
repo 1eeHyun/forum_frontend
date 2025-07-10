@@ -2,8 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { createPost } from "@post/services/postApi";
 import { ROUTES } from "@/constants/apiRoutes/routes";
 
-import PostForm from "@post/components/form/PostForm";
-
 export default function CreatePostPage() {
   const navigate = useNavigate();
 
