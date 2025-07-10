@@ -2,6 +2,7 @@ import { formatTimeAgo } from "@/utils/dateUtils";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { ROUTES } from "@/constants/apiRoutes/routes";
+import PostOptionsMenu from "./PostOptionsMenu";
 
 const iconSize = "w-5 h-5";
 const avatarSize = "w-5 h-5";
@@ -19,7 +20,7 @@ export default function PostHeader({ title, author, createdAt, community }) {
   };
 
   return (
-    <div className="mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
+    <div className="mb-6 border-b border-gray-200 dark:border-gray-700 pb-4 relative">
       {/* Community + Author */}
       <div className="flex items-center justify-between mb-2 text-sm text-gray-500 dark:text-gray-400">
         {/* Left: Community Info */}
@@ -51,8 +52,8 @@ export default function PostHeader({ title, author, createdAt, community }) {
           )}
         </div>
 
-        {/* Right: Author */}
-        <div className="flex items-center gap-1">
+        {/* Right: Author + Time + Menu */}
+        <div className="flex items-center gap-1 relative">
           {author?.profileImage?.imageUrl && (
             <img
               src={author.profileImage.imageUrl}
@@ -67,6 +68,17 @@ export default function PostHeader({ title, author, createdAt, community }) {
             {author?.nickname ?? "Unknown Author"}
           </span>
           <span className="text-gray-400 text-sm">· {formatTimeAgo(createdAt)}</span>
+
+          {/* Tree dots menu */}
+          <PostOptionsMenu
+            authorUsername={author?.username}
+            onEdit={() => console.log("Edit")}
+            onDelete={() => console.log("Delete")}
+            onReport={() => console.log("Report")}
+            onFollow={() => console.log("Follow Author")}
+            onSave={() => console.log("Save Post")}
+            onHide={() => console.log("Hide Post")}
+          />
         </div>
       </div>
 
