@@ -85,7 +85,13 @@ export default function PostHeader({
             postId={postId}
             onDelete={onDelete}
             onReport={() => console.log("Report")}
-            onFollow={() => console.log("Follow Author")}
+            onFollow={(willFollow) => {
+              if (willFollow) {
+                followAuthor(post.author.username);
+              } else {
+                unfollowAuthor(post.author.username);
+              }
+            }}
             onSave={() => console.log("Save Post")}
             onHide={() => console.log("Hide Post")}
           />

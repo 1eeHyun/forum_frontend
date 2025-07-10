@@ -1,6 +1,7 @@
 import {
   MoreHorizontal,
   UserPlus,
+  UserMinus,
   Bookmark,
   EyeOff,
   Flag,
@@ -12,6 +13,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import { checkIsFollowing, followUserToggle } from "@profile/services/followApi";
 
 export default function PostOptionsMenu({
   authorUsername,
@@ -19,12 +21,14 @@ export default function PostOptionsMenu({
   onEdit,
   onDelete,
   onReport,
-  onFollow,
   onSave,
   onHide,
 }) {
   const [open, setOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [followLoading, setFollowLoading] = useState(true);
+
   const menuRef = useRef();
   const { username: loggedInUsername, isLoggedIn } = useAuth();
   const navigate = useNavigate();
@@ -33,6 +37,25 @@ export default function PostOptionsMenu({
     isLoggedIn &&
     loggedInUsername?.toLowerCase() === authorUsername?.toLowerCase();
 
+  // Fetch follow status
+  useEffect(() => {
+    async function fetchFollowStatus() {
+      if (!isOwner && authorUsername) {
+        try {
+          const res = await checkIsFollowing(authorUsername);
+        
+          setIsFollowing(res.data.data);
+        } catch (err) {
+          console.error("Failed to check follow status:", err);
+        } finally {
+          setFollowLoading(false);
+        }
+      }
+    }
+    fetchFollowStatus();
+  }, [authorUsername]);
+
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -47,6 +70,15 @@ export default function PostOptionsMenu({
 
   const menuItemStyle =
     "flex items-center gap-2 w-full px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700";
+
+  const handleFollowToggle = async () => {
+    try {
+      await followUserToggle(authorUsername);      
+      setIsFollowing((prev) => !prev);
+    } catch (err) {
+      console.error("Failed to toggle follow:", err);
+    }
+  };
 
   return (
     <div className="relative" ref={menuRef}>
@@ -88,16 +120,28 @@ export default function PostOptionsMenu({
             </>
           ) : (
             <>
-              <button
-                className={menuItemStyle}
-                onClick={() => {
-                  setOpen(false);
-                  onFollow?.();
-                }}
-              >
-                <UserPlus className="w-4 h-4" />
-                Follow Author
-              </button>
+              {!followLoading && (
+                <button
+                  className={menuItemStyle}
+                  onClick={() => {
+                    setOpen(false);
+                    handleFollowToggle();
+                  }}
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserMinus className="w-4 h-4" />
+                      Unfollow Author
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-4 h-4" />
+                      Follow Author
+                    </>
+                  )}
+                </button>
+              )}
+
               <button
                 className={menuItemStyle}
                 onClick={() => {
@@ -133,7 +177,6 @@ export default function PostOptionsMenu({
         </div>
       )}
 
-      {/* Confirm Modal for Delete */}
       <ConfirmModal
         open={isConfirmOpen}
         title="Delete Post"
