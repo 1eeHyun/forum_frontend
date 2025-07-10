@@ -1,4 +1,7 @@
 import { useNavigate } from "react-router-dom";
+import { createPost } from "@post/services/postApi";
+import { ROUTES } from "@/constants/apiRoutes/routes";
+
 import PostForm from "@post/components/form/PostForm";
 
 export default function CreatePostPage() {
@@ -6,6 +9,7 @@ export default function CreatePostPage() {
 
   const handleCreate = async (formData) => {
     const res = await createPost(formData);
+    const postId = res.data.data.id; 
     navigate(ROUTES.POST_DETAIL(postId));
   };
 

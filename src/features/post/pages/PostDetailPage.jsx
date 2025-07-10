@@ -1,7 +1,7 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
-import { POST_ROUTES, AUTH_ROUTES, PROFILE } from "@/constants/apiRoutes";
+import { POST_ROUTES, AUTH_ROUTES, PROFILE, ROUTES } from "@/constants/apiRoutes";
 
 import PostContent from "@post/components/detail/post/content/PostContent";
 import PostCommentSection from "@post/components/detail/comment/PostCommentSection";
@@ -13,6 +13,7 @@ import MainLayout from "@/layout/MainLayout";
 
 export default function PostDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [post, setPost] = useState(null);
   const [user, setUser] = useState(undefined); // undefined = loading, null = not logged in
@@ -24,7 +25,6 @@ export default function PostDetailPage() {
   const [recentPosts, setRecentPosts] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
 
-  // Fetch post and user
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -58,7 +58,6 @@ export default function PostDetailPage() {
     fetchUser();
   }, [id]);
 
-  // Fetch sidebar profile data (for public posts)
   useEffect(() => {
     const fetchSidebarData = async () => {
       if (!post?.community && post?.author?.username) {
@@ -83,29 +82,25 @@ export default function PostDetailPage() {
     fetchSidebarData();
   }, [post?.author?.username]);
 
-  const handleCommentClick = () => {
-    document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" });
+  const handleDelete = async () => {
+    try {
+      await axios({
+        method: POST_ROUTES.DELETE(id).method,
+        url: POST_ROUTES.DELETE(id).url,
+      });
+
+      if (post.community?.id) {
+        navigate(ROUTES.COMMUNITY(post.community.id));
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Failed to delete the post:", err);
+      alert("Failed to delete the post. Please try again.");
+    }
   };
 
-  if (loading) {
-    return (
-      <MainLayout>
-        <div className="text-center text-gray-500 dark:text-gray-400 p-8">Loading post...</div>
-      </MainLayout>
-    );
-  }
-
-  if (error || !post) {
-    return (
-      <MainLayout>
-        <div className="text-center text-red-500 dark:text-red-400 p-8">
-          {error || "Post not found."}
-        </div>
-      </MainLayout>
-    );
-  }
-
-  const rightSidebar = post.community?.id ? (
+  const rightSidebar = post?.community?.id ? (
     <CommunityRightSidebar communityId={post.community.id} />
   ) : sidebarProfile ? (
     <ProfileRightSidebar
@@ -116,10 +111,25 @@ export default function PostDetailPage() {
     />
   ) : null;
 
+  if (loading || !post) {
+    return (
+      <MainLayout>
+        <div className="text-center text-gray-500 dark:text-gray-400 p-8">Loading post...</div>
+      </MainLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="text-center text-red-500 dark:text-red-400 p-8">{error}</div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout rightSidebar={rightSidebar}>
       <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 py-8 gap-8">
-        {/* Left: Post content */}
         <div className="flex-1">
           <PostHeader
             title={post.title}
@@ -127,11 +137,12 @@ export default function PostDetailPage() {
             createdAt={post.createdAt}
             community={post.community}
             postId={post.id}
+            onDelete={handleDelete}
           />
 
           <PostContent
             content={post.content}
-            files={post.fileUrls} // [{ fileUrl, type }]
+            files={post.fileUrls}
             likeUsers={post.likeUsers}
           />
 
@@ -140,7 +151,9 @@ export default function PostDetailPage() {
             initialLikeCount={post.likeCount}
             commentCount={post.commentCount}
             user={user}
-            onCommentClick={handleCommentClick}
+            onCommentClick={() =>
+              document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" })
+            }
             onShare={() => navigator.clipboard.writeText(window.location.href)}
           />
 

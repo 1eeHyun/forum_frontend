@@ -32,7 +32,7 @@ export default function CommunityPreviewCard({ community }) {
           <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600" />
         )}
         <p className="text-sm font-medium text-gray-900 dark:text-white">
-          #{community.name}
+          {community.name}
         </p>
       </div>
 

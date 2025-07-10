@@ -11,6 +11,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/apiRoutes/routes";
+import ConfirmModal from "@/components/ui/ConfirmModal"; 
 
 export default function PostOptionsMenu({
   authorUsername,
@@ -23,9 +24,10 @@ export default function PostOptionsMenu({
   onHide,
 }) {
   const [open, setOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false); // confirm modal
   const menuRef = useRef();
   const { username: loggedInUsername, isLoggedIn } = useAuth();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const isOwner =
     isLoggedIn &&
@@ -59,13 +61,15 @@ export default function PostOptionsMenu({
         <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-600 rounded-md z-10">
           {isOwner ? (
             <>
-              <button className={menuItemStyle} 
-                onClick={() => {setOpen(false);
-                    if (postId) {
-                        navigate(ROUTES.POST_EDIT(postId));
-                    } else {
-                        onEdit?.(); // fallback
-                    }
+              <button
+                className={menuItemStyle}
+                onClick={() => {
+                  setOpen(false);
+                  if (postId) {
+                    navigate(ROUTES.POST_EDIT(postId));
+                  } else {
+                    onEdit?.(); // fallback
+                  }
                 }}
               >
                 <Pencil className="w-4 h-4" />
@@ -73,7 +77,10 @@ export default function PostOptionsMenu({
               </button>
               <button
                 className={`${menuItemStyle} text-red-500`}
-                onClick={() => { setOpen(false); onDelete?.(); }}
+                onClick={() => {
+                  setOpen(false);
+                  setIsConfirmOpen(true);
+                }}
               >
                 <Trash2 className="w-4 h-4" />
                 Delete
@@ -104,6 +111,18 @@ export default function PostOptionsMenu({
           )}
         </div>
       )}
+
+      {/* ConfirmModal rendering */}
+      <ConfirmModal
+        open={isConfirmOpen}
+        title="Delete Post"
+        description="Are you sure you want to delete this post? This action cannot be undone."
+        onCancel={() => setIsConfirmOpen(false)}
+        onConfirm={() => {
+          setIsConfirmOpen(false);
+          onDelete?.(); 
+        }}
+      />
     </div>
   );
 }

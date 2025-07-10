@@ -8,22 +8,33 @@ const iconSize = "w-5 h-5";
 const avatarSize = "w-5 h-5";
 const communityAvatarSize = "w-7 h-7";
 
-export default function PostHeader({ title, author, createdAt, community, postId }) {
+export default function PostHeader({ 
+  title,
+  author,
+  createdAt,
+  community,
+  postId,
+  onDelete
+}) {
   const navigate = useNavigate();
 
   const handleCommunityClick = () => {
-    if (community?.id) navigate(ROUTES.COMMUNITY(community.id));
+    if (community?.id) {
+      navigate(ROUTES.COMMUNITY(community.id));
+    }
   };
 
   const handleAuthorClick = () => {
-    if (author?.username) navigate(ROUTES.PROFILE(author.username));
+    if (author?.username) {
+      navigate(ROUTES.PROFILE(author.username));
+    }
   };
 
   return (
     <div className="mb-6 border-b border-gray-200 dark:border-gray-700 pb-4 relative">
-      {/* Community + Author */}
+      {/* Community + Author Info */}
       <div className="flex items-center justify-between mb-2 text-sm text-gray-500 dark:text-gray-400">
-        {/* Left: Community Info */}
+        {/* Left: Back + Community Info */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(-1)}
@@ -52,7 +63,7 @@ export default function PostHeader({ title, author, createdAt, community, postId
           )}
         </div>
 
-        {/* Right: Author + Time + Menu */}
+        {/* Right: Author Info + Time + Menu */}
         <div className="flex items-center gap-1 relative">
           {author?.profileImage?.imageUrl && (
             <img
@@ -69,11 +80,10 @@ export default function PostHeader({ title, author, createdAt, community, postId
           </span>
           <span className="text-gray-400 text-sm">· {formatTimeAgo(createdAt)}</span>
 
-          {/* Tree dots menu */}
           <PostOptionsMenu
             authorUsername={author?.username}
-            postId={postId}            
-            onDelete={() => console.log("Delete")}
+            postId={postId}
+            onDelete={onDelete}
             onReport={() => console.log("Report")}
             onFollow={() => console.log("Follow Author")}
             onSave={() => console.log("Save Post")}
