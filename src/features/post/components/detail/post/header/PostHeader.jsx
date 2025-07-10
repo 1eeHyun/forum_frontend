@@ -32,7 +32,11 @@ export default function PostHeader({
 
   return (
     <div className="mb-6 border-b border-gray-200 dark:border-gray-700 pb-4 relative">
+<<<<<<< HEAD
       {/* Community + Author Info */}
+=======
+      {/* Community + Author */}
+>>>>>>> 7716fed (feat: Add PostOptionsMenu component with conditional owner vs viewer menu)
       <div className="flex items-center justify-between mb-2 text-sm text-gray-500 dark:text-gray-400">
         {/* Left: Back + Community Info */}
         <div className="flex items-center gap-2">
@@ -63,7 +67,11 @@ export default function PostHeader({
           )}
         </div>
 
+<<<<<<< HEAD
         {/* Right: Author Info + Time + Menu */}
+=======
+        {/* Right: Author + Time + Menu */}
+>>>>>>> 7716fed (feat: Add PostOptionsMenu component with conditional owner vs viewer menu)
         <div className="flex items-center gap-1 relative">
           {author?.profileImage?.imageUrl && (
             <img
@@ -80,10 +88,18 @@ export default function PostHeader({
           </span>
           <span className="text-gray-400 text-sm">· {formatTimeAgo(createdAt)}</span>
 
+<<<<<<< HEAD
           <PostOptionsMenu
             authorUsername={author?.username}
             postId={postId}
             onDelete={onDelete}
+=======
+          {/* Tree dots menu */}
+          <PostOptionsMenu
+            authorUsername={author?.username}
+            onEdit={() => console.log("Edit")}
+            onDelete={() => console.log("Delete")}
+>>>>>>> 7716fed (feat: Add PostOptionsMenu component with conditional owner vs viewer menu)
             onReport={() => console.log("Report")}
             onFollow={() => console.log("Follow Author")}
             onSave={() => console.log("Save Post")}
