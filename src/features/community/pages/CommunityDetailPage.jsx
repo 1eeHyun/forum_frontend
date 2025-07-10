@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { fetchCommunityInfo } from "@community/services/communityApi";
-import { AlignLeft } from "lucide-react";
+import { AlignLeft } from "lucide-react"
+import { joinCommunity } from "@community/services/communityApi";;
 
 import axios from "@/api/axios";
 import CommunityHeader from "@community/components/CommunityHeader";
@@ -83,7 +84,7 @@ export default function CommunityDetailPage() {
 
   const handleConfirmJoin = async () => {
     try {
-      await fetchCommunityInfo(id, "join");
+      await joinCommunity(id);
       setShowJoinModal(false);
       fetchCommunityDetail();
       fetchCommunityPosts();
@@ -96,12 +97,6 @@ export default function CommunityDetailPage() {
     fetchCommunityDetail();
     fetchCommunityPosts();
   }, [id, sortOption, categoryFromQuery]);
-
-  useEffect(() => {
-    if (postIdFromQuery) {
-      setSelectedPostId(postIdFromQuery);
-    }
-  }, [postIdFromQuery]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -179,11 +174,7 @@ export default function CommunityDetailPage() {
 
   return (
     <MainLayout
-      rightSidebar={
-        <CommunityRightSidebar
-          communityId={community.id}
-        />
-      }
+      rightSidebar={<CommunityRightSidebar communityId={community.id} />}
     >
       <div className="text-black dark:text-white">
         <CommunityHeader
@@ -200,6 +191,29 @@ export default function CommunityDetailPage() {
         {posts?.length > 0 && (
           <div className="py-6">
             <PostList posts={posts} />
+          </div>
+        )}
+
+        {/* Join Modal */}
+        {showJoinModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className={STYLES.modalContainer}>
+              <h2 className="text-lg font-bold mb-4">Join this community?</h2>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowJoinModal(false)}
+                  className={STYLES.modalButton}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmJoin}
+                  className={STYLES.confirmButton}
+                >
+                  Join
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

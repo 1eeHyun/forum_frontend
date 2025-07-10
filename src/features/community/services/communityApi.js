@@ -88,5 +88,3 @@ export const fetchCommunityInfo = async (communityId, infoType, params) => {
     throw err;
   }
 };
-
-
