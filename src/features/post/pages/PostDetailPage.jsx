@@ -1,7 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
-import { POST_ROUTES, AUTH_ROUTES, PROFILE, ROUTES } from "@/constants/apiRoutes";
+import {
+  POST_ROUTES,
+  AUTH_ROUTES,
+  PROFILE,
+  ROUTES,
+} from "@/constants/apiRoutes";
 
 import PostContent from "@post/components/detail/post/content/PostContent";
 import PostCommentSection from "@post/components/detail/comment/PostCommentSection";
@@ -10,6 +15,7 @@ import ProfileRightSidebar from "@profile/components/sidebar/ProfileRightSidebar
 import PostStat from "@post/components/detail/post/stat/PostStat";
 import PostHeader from "@post/components/detail/post/header/PostHeader";
 import MainLayout from "@/layout/MainLayout";
+import PostHiddenCard from "@post/components/list/postcard/PostHiddenCard";
 
 export default function PostDetailPage() {
   const { id } = useParams();
@@ -25,6 +31,7 @@ export default function PostDetailPage() {
   const [recentPosts, setRecentPosts] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
 
+  // Fetch post data
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -58,6 +65,7 @@ export default function PostDetailPage() {
     fetchUser();
   }, [id]);
 
+  // Profile Sidebar Data
   useEffect(() => {
     const fetchSidebarData = async () => {
       if (!post?.community && post?.author?.username) {
@@ -82,6 +90,7 @@ export default function PostDetailPage() {
     fetchSidebarData();
   }, [post?.author?.username]);
 
+  // Delete
   const handleDelete = async () => {
     try {
       await axios({
@@ -100,6 +109,33 @@ export default function PostDetailPage() {
     }
   };
 
+  // Hide
+  const handleHide = async () => {
+    try {
+      await axios({
+        method: POST_ROUTES.HIDE(post.id).method,
+        url: POST_ROUTES.HIDE(post.id).url,
+      });
+      setPost({ ...post, isHidden: true });
+    } catch (err) {
+      console.error("Failed to hide the post:", err);
+    }
+  };
+
+  // Undo hide
+  const handleUndoHide = async () => {
+    try {
+      await axios({
+        method: POST_ROUTES.HIDE(post.id).method,
+        url: POST_ROUTES.HIDE(post.id).url,
+      });
+      setPost({ ...post, isHidden: false });
+    } catch (err) {
+      console.error("Undo hide failed:", err);
+    }
+  };
+
+  // Right sidebar logic
   const rightSidebar = post?.community?.id ? (
     <CommunityRightSidebar communityId={post.community.id} />
   ) : sidebarProfile ? (
@@ -114,7 +150,9 @@ export default function PostDetailPage() {
   if (loading || !post) {
     return (
       <MainLayout>
-        <div className="text-center text-gray-500 dark:text-gray-400 p-8">Loading post...</div>
+        <div className="text-center text-gray-500 dark:text-gray-400 p-8">
+          Loading post...
+        </div>
       </MainLayout>
     );
   }
@@ -122,7 +160,9 @@ export default function PostDetailPage() {
   if (error) {
     return (
       <MainLayout>
-        <div className="text-center text-red-500 dark:text-red-400 p-8">{error}</div>
+        <div className="text-center text-red-500 dark:text-red-400 p-8">
+          {error}
+        </div>
       </MainLayout>
     );
   }
@@ -131,39 +171,50 @@ export default function PostDetailPage() {
     <MainLayout rightSidebar={rightSidebar}>
       <div className="flex flex-col lg:flex-row max-w-7xl mx-auto px-4 py-8 gap-8">
         <div className="flex-1">
-          <PostHeader
-            title={post.title}
-            author={post.author}
-            createdAt={post.createdAt}
-            community={post.community}
-            postId={post.id}
-            onDelete={handleDelete}
-          />
+          {post.isHidden ? (
+            <PostHiddenCard onUndo={handleUndoHide} />
+          ) : (
+            <>
+              <PostHeader
+                title={post.title}
+                author={post.author}
+                createdAt={post.createdAt}
+                community={post.community}
+                postId={post.id}
+                onDelete={handleDelete}
+                onHide={handleHide}
+              />
 
-          <PostContent
-            content={post.content}
-            files={post.fileUrls}
-            likeUsers={post.likeUsers}
-          />
+              <PostContent
+                content={post.content}
+                files={post.fileUrls}
+                likeUsers={post.likeUsers}
+              />
 
-          <PostStat
-            postId={post.id}
-            initialLikeCount={post.likeCount}
-            commentCount={post.commentCount}
-            user={user}
-            onCommentClick={() =>
-              document.getElementById("comments")?.scrollIntoView({ behavior: "smooth" })
-            }
-            onShare={() => navigator.clipboard.writeText(window.location.href)}
-          />
+              <PostStat
+                postId={post.id}
+                initialLikeCount={post.likeCount}
+                commentCount={post.commentCount}
+                user={user}
+                onCommentClick={() =>
+                  document
+                    .getElementById("comments")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                onShare={() =>
+                  navigator.clipboard.writeText(window.location.href)
+                }
+              />
 
-          <PostCommentSection
-            comments={post.comments}
-            commentCount={post.commentCount}
-            postId={post.id}
-            isAuthor={post.isAuthor}
-            user={user}
-          />
+              <PostCommentSection
+                comments={post.comments}
+                commentCount={post.commentCount}
+                postId={post.id}
+                isAuthor={post.isAuthor}
+                user={user}
+              />
+            </>
+          )}
         </div>
       </div>
     </MainLayout>

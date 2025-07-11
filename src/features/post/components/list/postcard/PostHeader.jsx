@@ -1,13 +1,16 @@
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import { formatTimeAgo } from "@/utils/dateUtils";
+import PostOptionsMenu from "@post/components/menu/PostOptionsMenu";
 
-export default function PostHeader({ post }) {
+export default function PostHeader({ post, onDelete, onHide, isHidden }) {
   const formattedTime = formatTimeAgo(post.createdAt);
+
+  if (isHidden) return null;
 
   return (
     <div className="flex items-center justify-between px-4 py-3">
-      {/* Community Info (only if post.community exists) */}
+      {/* Community Info */}
       {post.community ? (
         <div className="flex items-center gap-2">
           {post.community.imageDTO?.imageUrl && (
@@ -26,10 +29,10 @@ export default function PostHeader({ post }) {
           </Link>
         </div>
       ) : (
-        <div /> // Empty div to preserve layout spacing if needed
+        <div />
       )}
 
-      {/* Author Info + Time */}
+      {/* Author Info */}
       <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
         <Link
           to={ROUTES.PROFILE(post.author.username)}
@@ -45,7 +48,18 @@ export default function PostHeader({ post }) {
           />
           <span>{post.author.nickname}</span>
         </Link>
+
         <span className="text-xs text-gray-400">· {formattedTime}</span>
+
+        <PostOptionsMenu
+          authorUsername={post.author.username}
+          postId={post.id}
+          onDelete={onDelete}
+          onReport={() => console.log("Report")}
+          onFollow={() => {}}
+          onSave={() => console.log("Save Post")}
+          onHide={onHide}
+        />
       </div>
     </div>
   );

@@ -14,6 +14,7 @@ export const POSTS = {
   
     BOOKMARK: (postId) => ({ method: "POST", url: `/posts/${postId}/bookmark` }),
     REPORT: (postId) => ({ method: "POST", url: `/posts/${postId}/report` }),
+    HIDE: (postId) => ({ method: "POST", url: `/posts/${postId}/hide-toggle` }),
   
     RELATED: (postId) => ({ method: "GET", url: `/posts/${postId}/related` }),
     MY_COMMUNITY_RECENT: { method: "GET", url: "/posts/my-communities/recent" },

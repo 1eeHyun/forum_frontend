@@ -2,7 +2,8 @@ import { formatTimeAgo } from "@/utils/dateUtils";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { ROUTES } from "@/constants/apiRoutes/routes";
-import PostOptionsMenu from "./PostOptionsMenu";
+
+import PostOptionsMenu from "@post/components/menu/PostOptionsMenu";
 
 const iconSize = "w-5 h-5";
 const avatarSize = "w-5 h-5";
@@ -14,7 +15,8 @@ export default function PostHeader({
   createdAt,
   community,
   postId,
-  onDelete
+  onDelete,
+  onHide
 }) {
   const navigate = useNavigate();
 
@@ -32,9 +34,9 @@ export default function PostHeader({
 
   return (
     <div className="mb-6 border-b border-gray-200 dark:border-gray-700 pb-4 relative">
-      {/* Community + Author Info */}
+      {/* Top Section: Community and Author Info */}
       <div className="flex items-center justify-between mb-2 text-sm text-gray-500 dark:text-gray-400">
-        {/* Left: Back + Community Info */}
+        {/* Left: Back button and Community info */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate(-1)}
@@ -63,7 +65,7 @@ export default function PostHeader({
           )}
         </div>
 
-        {/* Right: Author Info + Time + Menu */}
+        {/* Right: Author info, timestamp, and options menu */}
         <div className="flex items-center gap-1 relative">
           {author?.profileImage?.imageUrl && (
             <img
@@ -93,12 +95,12 @@ export default function PostHeader({
               }
             }}
             onSave={() => console.log("Save Post")}
-            onHide={() => console.log("Hide Post")}
+            onHide={onHide}
           />
         </div>
       </div>
 
-      {/* Title */}
+      {/* Post Title */}
       <h1 className="text-2xl font-bold text-black dark:text-white">{title}</h1>
     </div>
   );

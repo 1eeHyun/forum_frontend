@@ -40,7 +40,7 @@ export default function PostOptionsMenu({
     isLoggedIn &&
     loggedInUsername?.toLowerCase() === authorUsername?.toLowerCase();
 
-  // Fetch follow status
+  // Load follow status
   useEffect(() => {
     async function fetchFollowStatus() {
       if (!isOwner && authorUsername) {
@@ -57,7 +57,7 @@ export default function PostOptionsMenu({
     fetchFollowStatus();
   }, [authorUsername]);
 
-  // Fetch bookmark status
+  // Load bookmark status 
   useEffect(() => {
     async function fetchBookmarkStatus() {
       if (postId) {
@@ -74,7 +74,7 @@ export default function PostOptionsMenu({
     fetchBookmarkStatus();
   }, [postId]);
 
-  // Close dropdown when clicking outside
+  // Click outside to close menu
   useEffect(() => {
     function handleClickOutside(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -111,14 +111,20 @@ export default function PostOptionsMenu({
   return (
     <div className="relative" ref={menuRef}>
       <button
-        onClick={() => setOpen((prev) => !prev)}
-        className="ml-2 text-gray-500 hover:text-black dark:hover:text-white"
+        onClick={(e) => {
+          e.stopPropagation(); // Prevent menu from closing
+          setOpen((prev) => !prev);
+        }}
+        className="ml-2 p-2 rounded-full text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
       >
-        <MoreHorizontal className="w-4 h-4" />
+        <MoreHorizontal className="w-5 h-5" />
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-600 rounded-md z-10">
+        <div
+          className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-600 rounded-md z-10"
+          onClick={(e) => e.stopPropagation()} // Prevent menu click from bubbling
+        >
           {isOwner ? (
             <>
               <button
@@ -172,26 +178,25 @@ export default function PostOptionsMenu({
 
               {!bookmarkLoading && (
                 <button
-                    className={menuItemStyle}
-                    onClick={() => {
+                  className={menuItemStyle}
+                  onClick={() => {
                     setOpen(false);
                     handleBookmarkToggle();
-                    }}
+                  }}
                 >
-                    {isBookmarked ? (
+                  {isBookmarked ? (
                     <>
-                        <Bookmark className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        Unsave
+                      <BookmarkMinus className="w-4 h-4 text-yellow-500" />
+                      Unsave
                     </>
-                    ) : (
+                  ) : (
                     <>
-                        <Bookmark className="w-4 h-4" />
-                        Save
+                      <Bookmark className="w-4 h-4" />
+                      Save
                     </>
-                    )}
+                  )}
                 </button>
-                )}
-
+              )}
 
               <button
                 className={menuItemStyle}
@@ -203,6 +208,7 @@ export default function PostOptionsMenu({
                 <EyeOff className="w-4 h-4" />
                 Hide
               </button>
+
               <button
                 className={`${menuItemStyle} text-red-500`}
                 onClick={() => {

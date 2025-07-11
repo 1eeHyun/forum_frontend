@@ -1,33 +1,21 @@
 import { X } from "lucide-react";
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import { POST_LABELS } from "@/features/post/constants/postLabels";
 
-export default function TopPostCard({ post }) {
+export default function RelatedPostCard({ post }) {
   const navigate = useNavigate();
-  const location = useLocation();
   const [visible, setVisible] = useState(true);
 
   if (!visible) return null;
 
-  const thumbnailFile = post.fileUrls?.find(
+  const media = post.fileUrls?.find(
     (file) => file.type === "IMAGE" || file.type === "VIDEO"
   );
-
-  // Community info
-  const community = post.community;
-  const communityImage =
-    community?.imageDTO?.imageUrl || post.communityProfilePicture?.imageUrl;
-  const communityImageX = community?.imageDTO?.imagePositionX ?? 50;
-  const communityImageY = community?.imageDTO?.imagePositionY ?? 50;
-
-  // Author info
-  const author = post.author;
-  const authorImage = author?.profileImage?.imageUrl;
-  const authorImageX = author?.profileImage?.imagePositionX ?? 50;
-  const authorImageY = author?.profileImage?.imagePositionY ?? 50;
+  const communityImage = post.communityProfilePicture?.imageUrl;
+  const hasCommunity = post.communityId && post.communityName && communityImage;
 
   const openPost = () => {
     navigate(ROUTES.POST_DETAIL(post.id));
@@ -35,31 +23,42 @@ export default function TopPostCard({ post }) {
 
   const openProfile = (e) => {
     e.stopPropagation();
-    if (author?.username) {
-      navigate(ROUTES.PROFILE(author.username));
-    }
+    navigate(ROUTES.PROFILE(post.author?.username));
   };
 
   const openCommunity = (e) => {
     e.stopPropagation();
-    if (community?.id) {
-      navigate(ROUTES.COMMUNITY(community.id));
-    } else if (post.communityId) {
-      navigate(ROUTES.COMMUNITY(post.communityId));
-    }
+    navigate(ROUTES.COMMUNITY(post.communityId));
   };
 
-  const hasCommunity = Boolean(community?.name);
+  if (post.isHidden) {
+    return (
+      <div className="relative rounded-lg p-4 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setVisible(false);
+          }}
+          className="absolute top-2 right-2 text-muted hover:text-danger"
+        >
+          <X size={16} />
+        </button>
+        <span className="block font-medium">This post is hidden.</span>
+      </div>
+    );
+  }
 
   return (
     <div
-      className={`relative rounded-lg p-3 transition cursor-pointer
-        ${thumbnailFile ? "flex flex-row-reverse gap-3 items-center" : "flex-col space-y-2"}
-        hover:bg-card-hover hover:scale-[1.01] dark:hover:bg-dark-card-hover
-      `}
       onClick={openPost}
+      className={`
+        relative rounded-lg p-3 transition cursor-pointer
+        ${media ? "flex gap-3 items-center" : "flex-col space-y-2"}
+        hover:bg-card-hover hover:scale-[1.01]
+        dark:hover:bg-dark-card-hover
+      `}
     >
-      {/* Close button */}
+      {/* Close Button */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -70,98 +69,79 @@ export default function TopPostCard({ post }) {
         <X size={16} />
       </button>
 
-      {/* Thumbnail */}
-      {thumbnailFile && (
-        thumbnailFile.type === "IMAGE" ? (
+      {/* Media Thumbnail */}
+      {media && (
+        media.type === "IMAGE" ? (
           <img
-            src={thumbnailFile.fileUrl}
+            src={media.fileUrl}
             alt="thumbnail"
             className="w-32 h-32 rounded-md object-cover flex-shrink-0 cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
               openPost();
             }}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "/default-thumbnail.png";
+            }}
           />
         ) : (
           <video
-            src={thumbnailFile.fileUrl}
+            src={media.fileUrl}
             className="w-32 h-32 rounded-md object-cover flex-shrink-0 cursor-pointer"
-            muted
-            playsInline
             onClick={(e) => {
               e.stopPropagation();
               openPost();
             }}
+            onError={(e) => {
+              e.target.onerror = null;
+            }}
+            muted
+            playsInline
           />
         )
       )}
 
-      {/* Text content */}
+      {/* Text Section */}
       <div className="flex flex-col justify-between text-sm text-muted w-full">
         <div className="flex items-center gap-2 mb-1">
-          {hasCommunity ? (
-            <>
-              {communityImage && (
-                <img
-                  src={communityImage}
-                  alt="community"
-                  onClick={openCommunity}
-                  className="w-6 h-6 rounded-full object-cover border border-card hover:ring-2 hover:ring-primary transition cursor-pointer"
-                  style={{
-                    objectPosition: `${communityImageX}% ${communityImageY}%`,
-                  }}
-                />
-              )}
-              <span
-                onClick={openCommunity}
-                className="text-sm text-primary hover:underline cursor-pointer font-medium transition"
-              >
-                {community.name}
+          {hasCommunity && (
+            <div onClick={openCommunity} className="flex items-center gap-1">
+              <img
+                src={communityImage}
+                alt="community"
+                className="w-6 h-6 rounded-full object-cover border border-card"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/default-community.png";
+                }}
+              />
+              <span className="text-sm text-primary hover:underline cursor-pointer font-medium">
+                {post.communityName}
               </span>
-              <span
-                onClick={openProfile}
-                className="text-xs hover:underline hover:text-primary cursor-pointer transition"
-              >
-                {POST_LABELS.AUTHOR_PREFIX} {author?.nickname}
-              </span>
-            </>
-          ) : (
-            <>
-              {authorImage && (
-                <img
-                  src={authorImage}
-                  alt="author"
-                  onClick={openProfile}
-                  className="w-6 h-6 rounded-full object-cover border border-card hover:ring-2 hover:ring-primary transition cursor-pointer"
-                  style={{
-                    objectPosition: `${authorImageX}% ${authorImageY}%`,
-                  }}
-                />
-              )}
-              <span
-                onClick={openProfile}
-                className="text-sm hover:underline hover:text-primary cursor-pointer transition"
-              >
-                {author?.nickname}
-              </span>
-            </>
+            </div>
           )}
+          <span
+            onClick={openProfile}
+            className="text-xs text-muted hover:underline hover:text-primary cursor-pointer"
+          >
+            {POST_LABELS.AUTHOR_PREFIX} {post.author?.nickname}
+          </span>
         </div>
 
-        {/* Title */}
         <div className="mt-0.5 font-semibold text-black dark:text-white line-clamp-1 text-sm">
-          {post.title || POST_LABELS.NO_TITLE}
+          {post.title}
         </div>
 
-        {/* Content */}
         {post.content && (
-          <div className="text-sm text-muted line-clamp-4 mt-1">{post.content}</div>
+          <div className="text-sm text-muted line-clamp-4 mt-1">
+            {post.content}
+          </div>
         )}
 
-        {/* Stats */}
         <div className="text-xs text-muted mt-2 flex gap-4">
-          <span>{post.likeCount ?? 0} {POST_LABELS.LIKES}</span>
-          <span>{post.commentCount ?? 0} {POST_LABELS.COMMENTS}</span>
+          <span>{post.likeCount} {POST_LABELS.LIKES}</span>
+          <span>{post.commentCount} {POST_LABELS.COMMENTS}</span>
         </div>
       </div>
     </div>

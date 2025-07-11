@@ -13,6 +13,7 @@ export default function RelatedPostCard({ post }) {
 
   const media = post.fileUrls?.find((file) => file.type === "IMAGE" || file.type === "VIDEO");
   const communityImage = post.communityProfilePicture?.imageUrl;
+  const hasCommunity = post.communityId && post.communityName && communityImage;
 
   const openPost = () => {
     navigate(ROUTES.POST_DETAIL(post.id));
@@ -27,8 +28,23 @@ export default function RelatedPostCard({ post }) {
     e.stopPropagation();
     navigate(ROUTES.COMMUNITY(post.communityId));
   };
-
-  const hasCommunity = post.communityId && post.communityName && communityImage;
+  
+  if (post.isHidden) {
+    return (
+      <div className="relative rounded-lg p-4 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-sm">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setVisible(false);
+          }}
+          className="absolute top-2 right-2 text-muted hover:text-danger"
+        >
+          <X size={16} />
+        </button>
+        <span className="block font-medium">This post is hidden.</span>
+      </div>
+    );
+  }
 
   return (
     <div

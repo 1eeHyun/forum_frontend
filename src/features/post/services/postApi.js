@@ -62,3 +62,17 @@ export const uploadMedia = async (file) => {
 
   return res;
 };
+
+/**
+ * Toggle hidden status of a post
+ */
+export async function togglePostHide(postId) {
+  const { method, url } = POSTS.HIDE(postId);
+  try {
+    const res = await axios({ method, url });
+    return res.data?.data ?? true;
+  } catch (e) {
+    console.error("Failed to toggle post hide:", e);
+    throw e;
+  }
+}
