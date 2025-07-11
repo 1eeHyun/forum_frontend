@@ -3,6 +3,7 @@ import {
   UserPlus,
   UserMinus,
   Bookmark,
+  BookmarkMinus,
   EyeOff,
   Flag,
   Pencil,
@@ -14,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { checkIsFollowing, followUserToggle } from "@profile/services/followApi";
+import { checkIsBookmarked, toggleBookmark } from "@bookmark/services/bookmarkApi";
 
 export default function PostOptionsMenu({
   authorUsername,
@@ -21,13 +23,14 @@ export default function PostOptionsMenu({
   onEdit,
   onDelete,
   onReport,
-  onSave,
   onHide,
 }) {
   const [open, setOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [bookmarkLoading, setBookmarkLoading] = useState(true);
 
   const menuRef = useRef();
   const { username: loggedInUsername, isLoggedIn } = useAuth();
@@ -43,7 +46,6 @@ export default function PostOptionsMenu({
       if (!isOwner && authorUsername) {
         try {
           const res = await checkIsFollowing(authorUsername);
-        
           setIsFollowing(res.data.data);
         } catch (err) {
           console.error("Failed to check follow status:", err);
@@ -54,6 +56,23 @@ export default function PostOptionsMenu({
     }
     fetchFollowStatus();
   }, [authorUsername]);
+
+  // Fetch bookmark status
+  useEffect(() => {
+    async function fetchBookmarkStatus() {
+      if (postId) {
+        try {
+          const res = await checkIsBookmarked(postId);
+          setIsBookmarked(res.data.data);
+        } catch (err) {
+          console.error("Failed to check bookmark status:", err);
+        } finally {
+          setBookmarkLoading(false);
+        }
+      }
+    }
+    fetchBookmarkStatus();
+  }, [postId]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -73,10 +92,19 @@ export default function PostOptionsMenu({
 
   const handleFollowToggle = async () => {
     try {
-      await followUserToggle(authorUsername);      
+      await followUserToggle(authorUsername);
       setIsFollowing((prev) => !prev);
     } catch (err) {
       console.error("Failed to toggle follow:", err);
+    }
+  };
+
+  const handleBookmarkToggle = async () => {
+    try {
+      await toggleBookmark(postId);
+      setIsBookmarked((prev) => !prev);
+    } catch (err) {
+      console.error("Failed to toggle bookmark:", err);
     }
   };
 
@@ -142,16 +170,29 @@ export default function PostOptionsMenu({
                 </button>
               )}
 
-              <button
-                className={menuItemStyle}
-                onClick={() => {
-                  setOpen(false);
-                  onSave?.();
-                }}
-              >
-                <Bookmark className="w-4 h-4" />
-                Save
-              </button>
+              {!bookmarkLoading && (
+                <button
+                    className={menuItemStyle}
+                    onClick={() => {
+                    setOpen(false);
+                    handleBookmarkToggle();
+                    }}
+                >
+                    {isBookmarked ? (
+                    <>
+                        <Bookmark className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        Unsave
+                    </>
+                    ) : (
+                    <>
+                        <Bookmark className="w-4 h-4" />
+                        Save
+                    </>
+                    )}
+                </button>
+                )}
+
+
               <button
                 className={menuItemStyle}
                 onClick={() => {

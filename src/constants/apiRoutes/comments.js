@@ -8,5 +8,5 @@ export const COMMENTS = {
     DISLIKE_COUNT: (id) => ({ method: "get", url: `/comments/${id}/dislikes/count` }),
     HAS_LIKED: (id) => ({ method: "get", url: `/comments/${id}/likes/me` }),
     HAS_DISLIKED: (id) => ({ method: "get", url: `/comments/${id}/dislikes/me` }),
-  };
+};
   
