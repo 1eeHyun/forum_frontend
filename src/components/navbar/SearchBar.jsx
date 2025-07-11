@@ -51,12 +51,10 @@ export default function SearchBar() {
 
   const handleNavigate = (target, isPost = false) => {
     if (isPost) {
-      navigate(POST_NAVIGATION.withPostId(location.pathname, target));
+      navigate(POST_NAVIGATION.detail(target));
     } else {
       navigate(target);
     }
-    setShowResults(false);
-    setSearchTerm("");
   };
 
   return (
@@ -81,22 +79,22 @@ export default function SearchBar() {
               </h3>
               {results.users.map((u) => (
                 <div
-                key={u.username}
-                onClick={() => handleNavigate(USER_NAVIGATION.profile(u.username))}
-                className="flex items-center gap-2 px-2 py-1 hover:bg-card-hover dark:hover:bg-dark-card-hover cursor-pointer rounded"
-              >
-                <img
-                  src={u.imageDto?.imageUrl}
-                  alt="profile"
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                <div className="text-sm text-black dark:text-white">
-                  <p className="font-medium">{u.nickname}</p>
-                  <p className="text-muted dark:text-dark-muted text-xs">
-                    @{u.username}
-                  </p>
+                  key={u.username}
+                  onClick={() => handleNavigate(USER_NAVIGATION.profile(u.username))}
+                  className="flex items-center gap-2 px-2 py-1 hover:bg-card-hover dark:hover:bg-dark-card-hover cursor-pointer rounded"
+                >
+                  <img
+                    src={u.imageDto?.imageUrl}
+                    alt="profile"
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
+                  <div className="text-sm text-black dark:text-white">
+                    <p className="font-medium">{u.nickname}</p>
+                    <p className="text-muted dark:text-dark-muted text-xs">
+                      @{u.username}
+                    </p>
+                  </div>
                 </div>
-              </div>
               ))}
             </div>
           )}
@@ -107,7 +105,7 @@ export default function SearchBar() {
                 {SEARCH_LABELS.COMMUNITIES}
               </h3>
               {results.communities.map((c) => (
-                  <div
+                <div
                   key={c.id}
                   onClick={() => handleNavigate(COMMUNITY_NAVIGATION.detail(c.id))}
                   className="flex items-center gap-2 px-2 py-1 hover:bg-card-hover dark:hover:bg-dark-card-hover cursor-pointer rounded"
@@ -130,27 +128,48 @@ export default function SearchBar() {
               <h3 className="text-muted dark:text-dark-muted text-sm mb-2 font-semibold">
                 {SEARCH_LABELS.POSTS}
               </h3>
-              {results.posts.map((p) => (
-                <div
-                  key={p.id}
-                  onClick={() => handleNavigate(p.id, true)}
-                  className="flex items-center gap-2 px-2 py-1 hover:bg-card-hover dark:hover:bg-dark-card-hover cursor-pointer rounded"
-                >
-                  {p.imageUrls?.length > 0 && (
-                    <img
-                      src={p.imageUrls[0]}
-                      alt="thumbnail"
-                      className="w-16 h-16 rounded object-cover"
-                    />
-                  )}
-                  <div className="text-sm text-black dark:text-white">
-                    <p className="font-medium">{p.title}</p>
-                    <p className="text-muted dark:text-dark-muted text-xs">
-                      {SEARCH_LABELS.BY} {p.authorNickname}
-                    </p>
+              {results.posts.map((p) => {
+                const media = p.fileUrls?.find((f) => f.type === "IMAGE" || f.type === "VIDEO");
+
+                return (
+                  <div
+                    key={p.id}
+                    onClick={() => handleNavigate(p.id, true)}
+                    className="flex items-center gap-2 px-2 py-1 hover:bg-card-hover dark:hover:bg-dark-card-hover cursor-pointer rounded"
+                  >
+                    {media && (
+                      media.type === "IMAGE" ? (
+                        <img
+                          src={media.fileUrl}
+                          alt="thumbnail"
+                          className="w-16 h-16 rounded object-cover"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/default-thumbnail.png";
+                          }}
+                        />
+                      ) : (
+                        <video
+                          src={media.fileUrl}
+                          className="w-16 h-16 rounded object-cover"
+                          muted
+                          playsInline
+                          onError={(e) => {
+                            e.target.onerror = null;
+                          }}
+                        />
+                      )
+                    )}
+
+                    <div className="text-sm text-black dark:text-white">
+                      <p className="font-medium">{p.title}</p>
+                      <p className="text-muted dark:text-dark-muted text-xs">
+                        {SEARCH_LABELS.BY} {p.authorNickname}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
