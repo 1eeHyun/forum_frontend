@@ -14,30 +14,30 @@ export default function NewMessageModal({ modalRef, onClose, onSelectUser }) {
 
   const users = useFetchUsers(search);
 
-  const handleSend = async () => {
-    if (!selectedUser) return;
+  const handleSend = async () => {  
+  if (!selectedUser) return;
 
-    try {
-      const res = await axios({
-        ...CHAT.CREATE_ROOM,
-        data: {
-          user2Username: selectedUser.username,
-        },
-      });
+  try {
+    const res = await axios({
+      ...CHAT.CREATE_ROOM,
+      params: {
+        targetUsername: selectedUser.username,
+      },
+    });
 
-      const roomId = res.data.data;
+    const roomId = res.data.data;
 
-      setThreads((prev) => {
-        if (prev.find((t) => t.roomId === roomId)) return prev;
-        return [...prev, { roomId, user: selectedUser, messages: [] }];
-      });
+    setThreads((prev) => {
+      if (prev.find((t) => t.roomId === roomId)) return prev;
+      return [...prev, { roomId, user: selectedUser, messages: [] }];
+    });
 
-      onSelectUser(selectedUser, roomId);
-      onClose();
-    } catch (err) {
-      console.error("Failed to create room", err);
-    }
-  };
+    onSelectUser(selectedUser, roomId);
+    onClose();
+  } catch (err) {
+    console.error("Failed to create room", err);
+  }
+};
 
   return (
     <div

@@ -8,6 +8,7 @@ export const ROUTES = {
     POST_EDIT: (postId) => `/posts/${postId}/edit`,
     POST_LIKE_USERS: (postId) => `/posts/${postId}/likes`,
     BOOKMARKS: "/bookmarks",
+    CHAT: "/chat/",
   
     CREATE_POST: "/create-post",
     CREATE_COMMUNITY: "/create-community",

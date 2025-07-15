@@ -6,6 +6,7 @@ import LoginPage from "@/features/auth/pages/LoginPage";
 import HomePage from "@home/pages/HomePage";
 import PrivateRoute from "./PrivateRoute";
 import BookmarkPostsPage from "@bookmark/pages/BookmarkPostsPage";
+import ChatPage from "@chat/pages/ChatPage"
 
 import PostDetailPage from "@post/pages/PostDetailPage";
 import CreatePostPage from "@post/pages/CreatePostPage";
@@ -117,6 +118,15 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <EditProfileImage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/chat"
+        element={
+          <PrivateRoute>
+            <ChatPage />
           </PrivateRoute>
         }
       />

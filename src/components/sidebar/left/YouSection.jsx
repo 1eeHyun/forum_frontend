@@ -9,24 +9,33 @@ export default function YouSection({ isOpen }) {
   const [expanded, setExpanded] = useState(true);
   const navigate = useNavigate();
 
-    const navigateToProfile = async () => {
-      try{
-        const res = await fetchMe();
-        const username = res.data.data.username;      
-        navigate(ROUTES.PROFILE(username));
-      }
-      catch(err){
-        console.error("Failed to fetch username", err)
-      }
+  const navigateToProfile = async () => {
+    try{
+      const res = await fetchMe();
+      const username = res.data.data.username;      
+      navigate(ROUTES.PROFILE(username));
     }
+    catch(err){
+      console.error("Failed to fetch username", err)
+    }
+  }
 
-    const navigateToBookmark = async () => {
-      try{   
-        navigate(ROUTES.BOOKMARKS);
-      }
-      catch(err){
-        console.error("Failed to fetch username", err)
-      }
+  const navigateToBookmark = async () => {
+    try{   
+      navigate(ROUTES.BOOKMARKS);
+    }
+    catch(err){
+      console.error("Failed to fetch username", err)
+    }
+  }
+
+  const navigateToChat = async () => {
+    try{   
+      navigate(ROUTES.CHAT);
+    }
+    catch(err){
+      console.error("Failed to fetch username", err)
+    }
   }
 
   if (!isOpen) {    
@@ -58,7 +67,7 @@ export default function YouSection({ isOpen }) {
 
       {expanded && (
         <>
-          <SidebarItem iconKey="chat" label="Chat" isOpen={isOpen} />
+          <SidebarItem iconKey="chat" label="Chat" isOpen={isOpen} onClick={navigateToChat}/>
           <SidebarItem iconKey="saved" label="Saved" isOpen={isOpen} onClick={navigateToBookmark} />
           <SidebarItem iconKey="profile" label="Profile" isOpen={isOpen} onClick={navigateToProfile}/>
         </>
