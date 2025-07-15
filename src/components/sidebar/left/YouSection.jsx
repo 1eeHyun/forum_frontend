@@ -10,15 +10,23 @@ export default function YouSection({ isOpen }) {
   const navigate = useNavigate();
 
     const navigateToProfile = async () => {
-    try{
-      const res = await fetchMe();
-      const username = res.data.data.username;
-      navigate(`/profile/${username}`);
-      navigate(ROUTES.PROFILE(username));
+      try{
+        const res = await fetchMe();
+        const username = res.data.data.username;      
+        navigate(ROUTES.PROFILE(username));
+      }
+      catch(err){
+        console.error("Failed to fetch username", err)
+      }
     }
-    catch(err){
-      console.error("Failed to fetch username", err)
-    }
+
+    const navigateToBookmark = async () => {
+      try{   
+        navigate(ROUTES.BOOKMARKS);
+      }
+      catch(err){
+        console.error("Failed to fetch username", err)
+      }
   }
 
   if (!isOpen) {    
@@ -51,7 +59,7 @@ export default function YouSection({ isOpen }) {
       {expanded && (
         <>
           <SidebarItem iconKey="chat" label="Chat" isOpen={isOpen} />
-          <SidebarItem iconKey="saved" label="Saved" isOpen={isOpen} />
+          <SidebarItem iconKey="saved" label="Saved" isOpen={isOpen} onClick={navigateToBookmark} />
           <SidebarItem iconKey="profile" label="Profile" isOpen={isOpen} onClick={navigateToProfile}/>
         </>
       )}
