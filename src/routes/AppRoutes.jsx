@@ -5,6 +5,7 @@ import LoginPage from "@/features/auth/pages/LoginPage";
 
 import HomePage from "@home/pages/HomePage";
 import PrivateRoute from "./PrivateRoute";
+import BookmarkPostsPage from "@bookmark/pages/BookmarkPostsPage";
 
 import PostDetailPage from "@post/pages/PostDetailPage";
 import CreatePostPage from "@post/pages/CreatePostPage";
@@ -33,6 +34,15 @@ export default function AppRoutes() {
       <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
 
       <Route path="/posts/:id" element={<PostDetailPage />} />
+
+      <Route
+        path="/bookmarks"
+        element={
+          <PrivateRoute>
+            <BookmarkPostsPage />
+          </PrivateRoute>
+        }
+      />
 
       <Route
         path="/create-post"

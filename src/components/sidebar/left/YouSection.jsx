@@ -1,9 +1,24 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import SidebarItem from "@/components/sidebar/left/SidebarItem";
+import { fetchMe } from "@/features/post/services/postApi";
+import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/constants/apiRoutes/routes";
 
 export default function YouSection({ isOpen }) {
   const [expanded, setExpanded] = useState(true);
+  const navigate = useNavigate();
+
+    const navigateToProfile = async () => {
+    try{
+      const res = await fetchMe();
+      const username = res.data.data.username;
+      navigate(ROUTES.PROFILE(username));
+    }
+    catch(err){
+      console.error("Failed to fetch username", err)
+    }
+  }
 
   if (!isOpen) {    
     return (
