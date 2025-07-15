@@ -14,7 +14,7 @@ export async function checkIsBookmarked(postId) {
 }
 
 // Get all bookmarks of current user
-export async function getMyBookmarks() {
+export async function getMyBookmarkedPosts() {
   const { method, url } = BOOKMARKS.MY;
   return await axios({ method, url });
 }
