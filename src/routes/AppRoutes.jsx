@@ -14,7 +14,7 @@ import EditPostPage from "@post/pages/EditPostPage";
 
 import CreateCommunityPage from "@community/pages/CreateCommunityPage";
 import CommunityDetailPage from "@community/pages/CommunityDetailPage";
-import CommunityManagePage from "@community/pages/CommunityManagePage"; 
+import CommunityManagePage from "@community/pages/CommunityManagePage";
 
 import ProfilePage from "@profile/pages/ProfilePage";
 import ProfileEditPage from "@profile/pages/EditProfilePage";
@@ -22,6 +22,7 @@ import EditBio from "@profile/pages/edit/EditBio";
 import EditNickname from "@profile/pages/edit/EditNickname";
 import EditUsername from "@profile/pages/edit/EditUsername";
 import EditProfileImage from "@profile/pages/edit/EditProfileImage";
+import CommunityListPage from "@/features/community/pages/CommunityListPage";
 
 export default function AppRoutes() {
   return (
@@ -33,6 +34,7 @@ export default function AppRoutes() {
 
       <Route path="/communities/:id" element={<CommunityDetailPage />} />
       <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
+      <Route path="/communities/manage" element={<CommunityListPage/>} />
 
       <Route path="/posts/:id" element={<PostDetailPage />} />
 
