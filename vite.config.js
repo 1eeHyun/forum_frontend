@@ -30,6 +30,7 @@ export default defineConfig({
       '@routes': path.resolve(__dirname, './src/routes'),
       '@bookmark': path.resolve(__dirname, './src/features/bookmark'),
       '@chat': path.resolve(__dirname, './src/features/chat'),
+      '@trending': path.resolve(__dirname, './src/features/trending'),
     },
   },
   server: {

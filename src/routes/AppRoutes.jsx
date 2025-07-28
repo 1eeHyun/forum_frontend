@@ -7,6 +7,7 @@ import HomePage from "@home/pages/HomePage";
 import PrivateRoute from "./PrivateRoute";
 import BookmarkPostsPage from "@bookmark/pages/BookmarkPostsPage";
 import ChatPage from "@chat/pages/ChatPage"
+import TrendingPage from "@trending/pages/TrendingPage";
 
 import PostDetailPage from "@post/pages/PostDetailPage";
 import CreatePostPage from "@post/pages/CreatePostPage";
@@ -35,6 +36,8 @@ export default function AppRoutes() {
       <Route path="/communities/:id" element={<CommunityDetailPage />} />
       <Route path="/communities/:id/manage" element={<CommunityManagePage />} />
       <Route path="/communities/manage" element={<CommunityListPage/>} />
+
+      <Route path="/trending" element={<TrendingPage/>} />
 
       <Route path="/posts/:id" element={<PostDetailPage />} />
 
