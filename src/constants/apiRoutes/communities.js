@@ -8,6 +8,9 @@ export const COMMUNITIES = {
   // Join community
   JOIN: (communityId) => ({ method: "POST", url: `/communities/${communityId}/join` }),
 
+  // Leave community 
+  LEAVE: (communityId) => ({ method: "POST", url: `/communities/${communityId}/leave` }),
+
   // Post
   POSTS: (communityId) => ({ method: "GET", url: `/communities/${communityId}/posts` }),
   
