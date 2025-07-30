@@ -41,9 +41,7 @@ export default function YouSection({ isOpen }) {
   if (!isOpen) {    
     return (
       <>
-        <SidebarItem iconKey="chat" label="Chat" isOpen={isOpen} />
-        <SidebarItem iconKey="saved" label="Saved" isOpen={isOpen} />
-        <SidebarItem iconKey="profile" label="Profile" isOpen={isOpen} />
+        
       </>
     );
   }

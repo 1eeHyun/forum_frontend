@@ -3,6 +3,7 @@ export const ROUTES = {
     SIGNUP: "/signup",
     LOGIN: "/login",
     POST: "/posts",
+    TRENDING: "/trending",
   
     POST_DETAIL: (postId) => `/posts/${postId}`,
     POST_EDIT: (postId) => `/posts/${postId}/edit`,

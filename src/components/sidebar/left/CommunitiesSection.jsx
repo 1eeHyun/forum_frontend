@@ -34,12 +34,9 @@ export default function CommunitiesSection({ isOpen }) {
 
   if (!isOpen) {
     return (
-      <button
-        onClick={() => navigate(ROUTES.MY_COMMUNITY)}
-        className="flex flex-col items-center justify-center w-full py-3 px-4 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-muted-foreground"
-      >
-        <Users className="w-6 h-6" />
-      </button>
+      <>
+        
+      </>
     );
   }
 

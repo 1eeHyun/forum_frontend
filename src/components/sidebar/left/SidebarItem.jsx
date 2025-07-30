@@ -19,8 +19,10 @@ const icons = {
   community: Users,
   create: PlusCircle,
 };
+
 export default function SidebarItem({ iconKey, label, isOpen, onClick }) {
   const Icon = icons[iconKey];
+  
   if (!Icon) return null;
 
   return (
@@ -40,4 +42,5 @@ export default function SidebarItem({ iconKey, label, isOpen, onClick }) {
     </div>
   );
 }
+
 
