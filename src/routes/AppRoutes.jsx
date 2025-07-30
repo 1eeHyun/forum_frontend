@@ -16,6 +16,7 @@ import EditPostPage from "@post/pages/EditPostPage";
 import CreateCommunityPage from "@community/pages/CreateCommunityPage";
 import CommunityDetailPage from "@community/pages/CommunityDetailPage";
 import CommunityManagePage from "@community/pages/CommunityManagePage";
+import MyCommunitiesPage from "@community/pages/MyCommunitiesPage";
 
 import ProfilePage from "@profile/pages/ProfilePage";
 import ProfileEditPage from "@profile/pages/EditProfilePage";
@@ -73,6 +74,15 @@ export default function AppRoutes() {
         element={
           <PrivateRoute>
             <CreateCommunityPage />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/communities/me"
+        element={
+          <PrivateRoute>
+            <MyCommunitiesPage />
           </PrivateRoute>
         }
       />

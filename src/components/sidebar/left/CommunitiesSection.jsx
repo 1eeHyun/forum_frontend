@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronDown, Plus, Settings, Star, Users } from "lucide-react";
 import axios from "@/api/axios";
 import { COMMUNITIES } from "@/constants/apiRoutes";
+import { ROUTES } from "@/constants/apiRoutes/routes";
 
 const BATCH_SIZE = 5;
 
@@ -34,7 +35,7 @@ export default function CommunitiesSection({ isOpen }) {
   if (!isOpen) {
     return (
       <button
-        onClick={() => navigate("/communities/me")}
+        onClick={() => navigate(ROUTES.MY_COMMUNITY)}
         className="flex flex-col items-center justify-center w-full py-3 px-4 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg text-muted-foreground"
       >
         <Users className="w-6 h-6" />
@@ -62,7 +63,7 @@ export default function CommunitiesSection({ isOpen }) {
       {expanded && (
         <>
           <button
-            onClick={() => navigate("/create-community")}
+            onClick={() => navigate(ROUTES.CREATE_COMMUNITY)}
             className="flex items-center gap-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-3 rounded-md"
           >
             <Plus className="w-5 h-5" />
@@ -70,7 +71,7 @@ export default function CommunitiesSection({ isOpen }) {
           </button>
 
           <button
-            onClick={() => navigate("/communities/manage")}
+            onClick={() => navigate(ROUTES.COMMUNITY_MANAGABLE)}
             className="flex items-center gap-2 text-sm text-foreground hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-3 rounded-md"
           >
             <Settings className="w-5 h-5" />

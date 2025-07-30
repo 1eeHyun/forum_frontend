@@ -8,7 +8,7 @@ export const ROUTES = {
     POST_EDIT: (postId) => `/posts/${postId}/edit`,
     POST_LIKE_USERS: (postId) => `/posts/${postId}/likes`,
     BOOKMARKS: "/bookmarks",
-    CHAT: "/chat/",
+    CHAT: "/chat",
   
     CREATE_POST: "/create-post",
     CREATE_COMMUNITY: "/create-community",
@@ -20,8 +20,10 @@ export const ROUTES = {
     PROFILE_EDIT_BIO: (username) => `/profile/${username}/edit/bio`,
     PROFILE_EDIT_PICTURE: (username) => `/profile/${username}/edit/picture`,
   
+    MY_COMMUNITY: "/communities/me",
     COMMUNITY: (communityId) => `/communities/${communityId}`,
     COMMUNITY_MANAGE: (communityId) => `/communities/${communityId}/manage`,
+    COMMUNITY_MANAGABLE: "/communities/manage",
   
     POST_RELATED: (postId) => `/posts/${postId}/related`,
     MY_COMMUNITY_RECENT: "/posts/my-communities/recent",
