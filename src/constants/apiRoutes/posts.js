@@ -3,6 +3,9 @@ export const POSTS = {
     FETCH_PAGINATED: { method: "GET", url: "/posts" },
     CREATE: { method: "POST", url: "/posts" },
     UPLOAD_FILE: { method: "POST", url: "/posts/upload" },
+
+    TRENDINGPOSTS: { method: "GET", url: "/posts/trending" },
+    TRENDING_SIDEBAR: { method: "GET", url: "/trending/sidebar" },
   
     DETAIL: (postId) => ({ method: "GET", url: `/posts/${postId}` }),
     UPDATE: (postId) => ({ method: "PUT", url: `/posts/${postId}` }),

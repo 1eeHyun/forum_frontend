@@ -3,6 +3,7 @@ import MainLayout from "@/layout/MainLayout";
 import PostList from "@post/components/list/PostList";
 import TrendingRightSidebar from "@trending/components/sidebar/TrendingRightSidebar";
 import { getTrendingPosts } from "@trending/services/trendingApi";
+import { LoaderCircle, Flame } from "lucide-react";
 
 export default function TrendingPage() {
   const [posts, setPosts] = useState([]);
@@ -25,13 +26,21 @@ export default function TrendingPage() {
 
   return (
     <MainLayout rightSidebar={<TrendingRightSidebar />}>
-      <div className="px-2 md:px-0">
-        <h1 className="text-xl font-semibold mb-4 dark:text-white">🔥 Trending Posts</h1>
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        <div className="flex items-center gap-2 pb-2 mb-6 border-b border-gray-200 dark:border-gray-700">
+          <Flame className="text-orange-500 dark:text-orange-400 w-6 h-6" />
+          <h1 className="text-2xl font-bold tracking-tight dark:text-white">
+            Trending Posts
+          </h1>
+        </div>
 
         {loading ? (
-          <p className="text-muted dark:text-dark-muted">Loading trending posts...</p>
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 animate-pulse">
+            <LoaderCircle className="w-5 h-5 animate-spin" />
+            <span>Loading trending posts...</span>
+          </div>
         ) : posts.length === 0 ? (
-          <p className="text-muted dark:text-dark-muted">No trending posts found.</p>
+          <p className="text-gray-500 dark:text-gray-400">No trending posts found.</p>
         ) : (
           <PostList posts={posts} />
         )}
