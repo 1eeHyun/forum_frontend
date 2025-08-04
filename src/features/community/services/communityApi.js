@@ -28,7 +28,7 @@ export const joinCommunity = (communityId) =>
 
 // Leave a community by communityId
 export const leaveCommunity = (communityId) =>
-  apiRequest(COMMUNITIES.LEAVE(communtiyId));
+  apiRequest(COMMUNITIES.LEAVE(communityId));
 
 // Add a rule to a community
 export const addCommunityRule = (communityId, ruleData) =>
