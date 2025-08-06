@@ -36,7 +36,7 @@ instance.interceptors.response.use(
     const requestUrl = error.config?.url || "";
     const currentPath = window.location.pathname;
 
-    const isUnauthorized = status === 401 || status === 403;
+    const isUnauthorized = status === 401;
     const isOnLoginPage = currentPath === "/";
 
     const ignore401Urls = ["/auth/me"];
