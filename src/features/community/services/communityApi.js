@@ -34,6 +34,10 @@ export const leaveCommunity = (communityId) =>
 export const addCommunityRule = (communityId, ruleData) =>
   apiRequest({ ...COMMUNITIES.ADD_RULE(communityId), data: ruleData });
 
+// toggle the favorite status of a community
+export const toggleFavoriteCommunity = (communityId) =>
+  apiRequest(COMMUNITIES.FAVORITE_TOGGLE(communityId));
+
 // Update the banner of a community
 export const updateCommunityBanner = (communityId, bannerData) =>
   apiRequest({ ...COMMUNITIES.UPDATE_BANNER(communityId), data: bannerData });

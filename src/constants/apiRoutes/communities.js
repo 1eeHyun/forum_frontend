@@ -4,6 +4,7 @@ export const COMMUNITIES = {
   ALL: { method: "GET", url: "/communities" },
   DETAIL: (communityId) => ({ method: "GET", url: `/communities/${communityId}` }),
   MANAGE: (communityId) => ({ method: "GET", url: `/communities/${communityId}/manage` }),
+  FAVORITE_TOGGLE: (communityId) => ({ method: "POST", url: `/communities/${communityId}/favorite-toggle` }),
 
   // Join community
   JOIN: (communityId) => ({ method: "POST", url: `/communities/${communityId}/join` }),

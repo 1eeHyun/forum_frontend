@@ -2,7 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "@/api/axios";
 import { COMMUNITIES } from "@/constants/apiRoutes";
-import { leaveCommunity, joinCommunity } from "../../services/communityApi";
+import {
+  leaveCommunity,
+  joinCommunity,
+  toggleFavoriteCommunity,
+} from "@community/services/communityApi";
 import { Star } from "lucide-react";
 import ErrorModal from "@/components/modal/ErrorModal";
 
@@ -15,29 +19,50 @@ export default function CommunityList() {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
-  const handleStarClick = (communityId) => {
-    setStarred((prev) =>
-      prev.includes(communityId)
-        ? prev.filter((id) => id !== communityId)
-        : [...prev, communityId]
-    );
+  // Util functions
+  const isJoined = (id) => joinedCommunities.includes(id);
+  const isStarred = (id) => starred.includes(id);
+  const isProcessing = (id) => processingCommunities.includes(id);
+
+  const handleStarClick = async (communityId) => {
+    if (isProcessing(communityId)) return;
+
+    setProcessingCommunities((prev) => [...prev, communityId]);
+
+    try {
+      await toggleFavoriteCommunity(communityId);
+
+      setStarred((prev) =>
+        prev.includes(communityId)
+          ? prev.filter((id) => id !== communityId)
+          : [...prev, communityId]
+      );
+    } catch (error) {
+      console.error("Failed to toggle favorite", error);
+      setModalMessage("Failed to update favorite. Please try again.");
+      setShowErrorModal(true);
+    } finally {
+      setProcessingCommunities((prev) =>
+        prev.filter((id) => id !== communityId)
+      );
+    }
   };
 
   const handleJoinToggle = async (communityId) => {
-    const communityExists = communities.some(
-      (community) => community.id === communityId
-    );
-    const isCurrentlyJoined = joinedCommunities.includes(communityId);
+    if (isProcessing(communityId)) return;
 
+    const communityExists = communities.some((c) => c.id === communityId);
     if (!communityExists) {
-      console.warn(`Community with id ${communityId} not found`);
+      console.warn(`Community with id not found`);
       return;
     }
 
     setProcessingCommunities((prev) => [...prev, communityId]);
 
+    const currentlyJoined = isJoined(communityId);
+
     try {
-      if (isCurrentlyJoined) {
+      if (currentlyJoined) {
         await leaveCommunity(communityId);
         setJoinedCommunities((prev) =>
           prev.filter((id) => id !== communityId)
@@ -48,22 +73,22 @@ export default function CommunityList() {
       }
     } catch (error) {
       console.error(
-        `Failed to ${isCurrentlyJoined ? "leave" : "join"} community`,
+        `Failed to ${currentlyJoined ? "leave" : "join"} community`,
         error
       );
 
       const errorMessage = error?.response?.data?.message;
 
       if (
-        isCurrentlyJoined &&
+        currentlyJoined &&
         errorMessage === "Managers cannot leave the community directly."
       ) {
         setModalMessage("Managers cannot leave the community directly.");
-        setShowErrorModal(true);
       } else {
         setModalMessage("Action failed. Please try again.");
-        setShowErrorModal(true);
       }
+
+      setShowErrorModal(true);
     } finally {
       setProcessingCommunities((prev) =>
         prev.filter((id) => id !== communityId)
@@ -71,35 +96,40 @@ export default function CommunityList() {
     }
   };
 
-  useEffect(() => {
-    async function fetchCommunities() {
-      try {
-        const { method, url } = COMMUNITIES.MY;
-        const response = await axios({ method, url });
-        const fetchedCommunities = response.data?.data || [];
-        setCommunities(fetchedCommunities);
-        setJoinedCommunities(fetchedCommunities.map((c) => c.id));
-      } catch (err) {
-        console.error("Failed to fetch communities", err);
-        setCommunities([]);
-        setJoinedCommunities([]);
-      }
-    }
+  const fetchCommunities = async () => {
+    try {
+      const { method, url } = COMMUNITIES.MY;
+      const response = await axios({ method, url });
+      const fetched = response.data?.data || [];git       
 
+      setCommunities(fetched);
+      setJoinedCommunities(fetched.map((c) => c.id));
+      setStarred(fetched.filter((c) => c.favorite).map((c) => c.id));
+    } catch (err) {
+      console.error("Failed to fetch communities", err);
+      setCommunities([]);
+      setJoinedCommunities([]);
+      setStarred([]);
+    }
+  };
+
+  useEffect(() => {
     fetchCommunities();
   }, []);
 
   return (
     <>
-      {communities.map((community) => {
-        const isJoined = joinedCommunities.includes(community.id);
-        const isProcessing = processingCommunities.includes(community.id);
-
-        return (
+      {communities.length === 0 ? (
+        <p className="text-sm text-muted text-center">
+          You have not joined any communities.
+        </p>
+      ) : (
+        communities.map((community) => (
           <div
             key={community.id}
             className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 mb-2"
           >
+            {/* Community navigation button */}
             <button
               onClick={() => navigate(`/communities/${community.id}`)}
               className="flex items-center flex-1 justify-between px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -114,46 +144,45 @@ export default function CommunityList() {
               </div>
             </button>
 
+            {/* Favorite star button */}
             <button
               onClick={() => handleStarClick(community.id)}
               className="ml-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none"
               aria-label="Star community"
+              disabled={isProcessing(community.id)}
             >
               <Star
                 className={`w-5 h-5 ${
-                  starred.includes(community.id)
+                  isStarred(community.id)
                     ? "text-yellow-400 fill-yellow-400"
                     : "text-muted-foreground"
                 }`}
               />
             </button>
 
+            {/* Join/Leave button */}
             <button
               onClick={() => handleJoinToggle(community.id)}
-              disabled={isProcessing}
+              disabled={isProcessing(community.id)}
               className={`ml-4 px-4 py-2 rounded-full focus:outline-none transition-colors ${
-                isProcessing ? "cursor-not-allowed opacity-75" : ""
-              } ${
-                isJoined
-                  ? isProcessing
-                    ? "bg-red-400 text-white"
-                    : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
-                  : isProcessing
-                  ? "bg-blue-400 text-white"
+                isProcessing(community.id)
+                  ? "cursor-not-allowed opacity-75"
+                  : isJoined(community.id)
+                  ? "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-500"
                   : "bg-blue-500 hover:bg-blue-600 text-white"
               }`}
             >
-              {isProcessing
-                ? isJoined
+              {isProcessing(community.id)
+                ? isJoined(community.id)
                   ? "Leaving..."
                   : "Joining..."
-                : isJoined
+                : isJoined(community.id)
                 ? "Leave"
                 : "Join"}
             </button>
           </div>
-        );
-      })}
+        ))
+      )}
 
       {/* Error Modal */}
       {showErrorModal && (
