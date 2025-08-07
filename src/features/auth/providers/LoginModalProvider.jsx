@@ -1,5 +1,4 @@
-// src/features/auth/providers/LoginModalProvider.jsx
-import { createContext, useState } from "react";
+import { createContext, useState, useContext } from "react";
 import LoginModal from "../components/LoginModal";
 
 export const LoginModalContext = createContext();
@@ -16,4 +15,12 @@ export default function LoginModalProvider({ children }) {
       {isOpen && <LoginModal onClose={close} />}
     </LoginModalContext.Provider>
   );
+}
+
+export function useLoginModal() {
+  const context = useContext(LoginModalContext);
+  if (!context) {
+    throw new Error("useLoginModal must be used within a LoginModalProvider");
+  }
+  return context;
 }

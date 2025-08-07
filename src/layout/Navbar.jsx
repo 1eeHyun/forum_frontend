@@ -94,7 +94,7 @@ export default function Navbar({ onToggleSidebar }) {
     <header className={NAVBAR_STYLES.HEADER}>
       {/* Left Section */}
       <div className="flex items-center gap-4">
-        <button onClick={onToggleSidebar} className="hover:text-purple-400 transition">
+        <button onClick={onToggleSidebar} className="hover:text-blue-500 transition">
           <Menu size={ICON_SIZES.MD} />
         </button>
 

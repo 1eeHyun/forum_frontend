@@ -5,6 +5,7 @@ import ChatFloatingButton from "@/components/chat/ChatFloatingButton";
 import ChatSidebar from "@/components/chat/ChatSidebar";
 import { ChatContext } from "@/context/ChatContext";
 import { useAuth } from "@/context/AuthContext";
+import LoginModal from "@/features/auth/components/LoginModal";
 
 // Read sidebar state from localStorage on initial load
 const getInitialSidebarState = () => {
@@ -16,11 +17,11 @@ export default function MainLayout({ children, rightSidebar, noSidebar = false }
   const [isSidebarOpen, setIsSidebarOpen] = useState(getInitialSidebarState);
   const [chatOpen, setChatOpen] = useState(false);
 
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, showLoginModal, setShowLoginModal } = useAuth();
   const { threads } = useContext(ChatContext);
 
   const sidebarWidth = isSidebarOpen ? 256 : 64;
-  const currentUsername = localStorage.getItem("username");
+  const currentUsername = localStorage.getItem("username");  
 
   const toggleSidebar = () => {
     const nextState = !isSidebarOpen;
@@ -75,6 +76,10 @@ export default function MainLayout({ children, rightSidebar, noSidebar = false }
           />
           <ChatSidebar isOpen={chatOpen} onClose={() => setChatOpen(false)} />
         </>
+      )}
+
+      {showLoginModal && (
+        <LoginModal onClose={() => setShowLoginModal(false)} />
       )}
     </div>
   );

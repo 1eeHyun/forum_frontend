@@ -4,9 +4,9 @@ import { ChatProvider } from "@/context/ChatContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 
+import LoginModalProvider from "@/features/auth/providers/LoginModalProvider";
 import Navbar from "@/layout/Navbar";
 import AppRoutes from "@/routes/AppRoutes";
-import LoginModalProvider from "@/features/auth/providers/LoginModalProvider";
 
 export default function App() {
   return (

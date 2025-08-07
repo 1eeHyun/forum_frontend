@@ -5,6 +5,7 @@ const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem("token"));
+  const [showLoginModal, setShowLoginModal] = useState(false); 
   const [username, setUsername] = useState(() => localStorage.getItem("username"));
   const { clearThreads } = useContext(ChatContext);
 
@@ -24,7 +25,7 @@ export function AuthProvider({ children }) {
     setIsLoggedIn(false);
     setUsername(null);
     clearThreads();
-    window.location.href = "/"; 
+    setShowLoginModal(true); 
   };
 
   return (

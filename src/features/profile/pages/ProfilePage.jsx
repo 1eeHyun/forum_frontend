@@ -1,10 +1,11 @@
 import { useRef, useCallback, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { fetchProfile, fetchProfilePosts } from "@/features/profile/services/profileApi";
-import { ROUTES } from "@/constants/apiRoutes/routes";
 import { PROFILE_PAGE } from "@/constants/profile/pageConstants";
 import { PROFILE } from "@/constants/apiRoutes/profile";
 import axios from "@/api/axios";
+
+import { useAuth } from "@/context/AuthContext";
 
 import ProfileHeader from "@/features/profile/components/ProfileHeader";
 import ProfilePostList from "@/features/profile/components/ProfilePostList";
@@ -18,9 +19,9 @@ const BODY_SCROLL_LOCK_CLASS = "overflow-hidden";
 
 export default function ProfilePage() {
   const { username } = useParams();
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   const observer = useRef(null);
+
+  const { isLoggedIn } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [isMine, setIsMine] = useState(null);
@@ -38,10 +39,6 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (!token) navigate(ROUTES.LOGIN);
-  }, [token, navigate]);
-
-  useEffect(() => {
     const checkSidebar = () => {
       const aside = document.querySelector("aside");
       if (aside) {
@@ -55,7 +52,7 @@ export default function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (!token) return;
+    if (!isLoggedIn) return;
 
     fetchProfile(username)
       .then((res) => {
@@ -83,10 +80,10 @@ export default function ProfilePage() {
         setIsMine(Boolean(isMe));
       })
       .catch((err) => console.error("Failed to fetch profile:", err));
-  }, [username, token]);
+  }, [username, isLoggedIn]);
 
   useEffect(() => {
-    if (!profile) return;
+    if (!isLoggedIn || !profile) return;
 
     const fetchSidebarData = async () => {
       try {
@@ -107,10 +104,10 @@ export default function ProfilePage() {
     };
 
     fetchSidebarData();
-  }, [profile, username]);
+  }, [profile, username, isLoggedIn]);
 
   useEffect(() => {
-    if (!token || !profile) return;
+    if (!isLoggedIn || !profile) return;
 
     const loadInitialPosts = async () => {
       try {
@@ -129,7 +126,7 @@ export default function ProfilePage() {
     };
 
     loadInitialPosts();
-  }, [profile, sortOption, token, username]);
+  }, [profile, sortOption, username, isLoggedIn]);
 
   const loadMore = useCallback(async () => {
     try {
@@ -169,7 +166,8 @@ export default function ProfilePage() {
     return () => document.body.classList.remove(BODY_SCROLL_LOCK_CLASS);
   }, [selectedPostId]);
 
-  if (!token) return null;
+  if (!isLoggedIn) return null;
+
   if (!profile || isMine === null) {
     return <div className="p-6 text-gray-400">{PROFILE_PAGE.LOADING_MESSAGE}</div>;
   }

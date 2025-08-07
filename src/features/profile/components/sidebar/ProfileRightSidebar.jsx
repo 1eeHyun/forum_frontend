@@ -24,7 +24,14 @@ export default function ProfileRightSidebar({
     communities: joinedCommunities,
   });
 
-  // Update local state when props change
+  // Update profile state when the initialProfile prop changes
+  useEffect(() => {
+    if (initialProfile) {
+      setProfile(initialProfile);
+    }
+  }, [initialProfile]);
+
+  // Update sidebar data when props change
   useEffect(() => {
     setSidebarData({
       topPosts: topLikedPosts,
@@ -33,7 +40,7 @@ export default function ProfileRightSidebar({
     });
   }, [topLikedPosts, recentPosts, joinedCommunities]);
 
-  // Fallback data fetching if props are empty
+  // Fallback: fetch data if no props are passed and no initialProfile exists
   useEffect(() => {
     const noProps =
       topLikedPosts.length === 0 &&

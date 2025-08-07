@@ -1,10 +1,11 @@
 import { User, MessageSquareText } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function ProfileInfoCard({ profile }) {
   const {
     username,
     nickname,
-    bio,    
+    bio,
     imageDTO,
     imagePositionX = 50,
     imagePositionY = 50,
@@ -42,7 +43,12 @@ export default function ProfileInfoCard({ profile }) {
           <h2 className="font-semibold text-lg text-black dark:text-white truncate">
             {nickname}
           </h2>
-          <p className="text-sm text-gray-500 truncate">@{username}</p>
+          <Link
+            to={`/profile/${username}`}
+            className="text-sm text-gray-500 hover:underline truncate"
+          >
+            @{username}
+          </Link>
         </div>
       </div>
 

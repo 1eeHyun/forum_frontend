@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// src/features/auth/components/LoginModal.jsx
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { login } from "@/features/auth/services/authApi";
@@ -8,9 +9,11 @@ import { ROUTES } from "@/constants/apiRoutes/routes";
 export default function LoginModal({ onClose }) {
   const [form, setForm] = useState({ usernameOrEmail: "", password: "" });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const modalRef = useRef(null);
   const { setUsername, setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
-
+  
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -18,11 +21,12 @@ export default function LoginModal({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
       const response = await login(form);
       const token = response.data.data?.token || response.data.token || response.data;
-      const username = response.data.data?.username;
+      const username = response.data.data?.username || response.data.username;
 
       localStorage.setItem("token", token);
       if (username) {
@@ -31,16 +35,17 @@ export default function LoginModal({ onClose }) {
       }
 
       setIsLoggedIn(true);
-      window.dispatchEvent(new Event("storage"));
       onClose();
-      window.location.reload();
     } catch (err) {
       const msg = err.response?.data?.message || err.response?.data?.error;
       const status = err.response?.status;
       setError(msg || `${LOGIN_LABELS.ERROR_DEFAULT} (status ${status})`);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Esc 
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape") onClose();
@@ -52,10 +57,23 @@ export default function LoginModal({ onClose }) {
       window.removeEventListener("keydown", handleEscape);
     };
   }, [onClose]);
+  
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="w-full max-w-md p-6 rounded-xl shadow-lg bg-white dark:bg-[#0e1012] text-black dark:text-white">
+      <div
+        ref={modalRef}
+        className="w-full max-w-md p-6 rounded-xl shadow-lg bg-white dark:bg-[#0e1012] text-black dark:text-white"
+      >
         <h2 className="text-xl font-bold mb-4">{LOGIN_LABELS.TITLE}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -66,6 +84,7 @@ export default function LoginModal({ onClose }) {
             onChange={handleChange}
             placeholder={LOGIN_LABELS.USERNAME_OR_EMAIL}
             className="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1c1f] text-black dark:text-white"
+            required
           />
           <input
             type="password"
@@ -74,13 +93,17 @@ export default function LoginModal({ onClose }) {
             onChange={handleChange}
             placeholder={LOGIN_LABELS.PASSWORD}
             className="w-full px-4 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-[#1a1c1f] text-black dark:text-white"
+            required
           />
 
           <button
             type="submit"
-            className="w-full py-2 rounded bg-blue-600 hover:bg-blue-700 text-white transition"
+            disabled={loading}
+            className={`w-full py-2 rounded text-white transition ${
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
-            {LOGIN_LABELS.SUBMIT}
+            {loading ? LOGIN_LABELS.SUBMITTING : LOGIN_LABELS.SUBMIT}
           </button>
 
           {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
@@ -91,7 +114,7 @@ export default function LoginModal({ onClose }) {
             onClick={() => navigate(ROUTES.SIGNUP)}
             className="text-blue-500 dark:text-blue-400 hover:underline text-sm"
           >
-            {LOGIN_LABELS.SIGN_UP}            
+            {LOGIN_LABELS.SIGN_UP}
           </button>
         </div>
 

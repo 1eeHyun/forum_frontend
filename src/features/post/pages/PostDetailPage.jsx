@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import axios from "@/api/axios";
 import {
   POST_ROUTES,
@@ -20,6 +21,7 @@ import PostHiddenCard from "@post/components/list/postcard/PostHiddenCard";
 export default function PostDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
 
   const [post, setPost] = useState(null);
   const [user, setUser] = useState(undefined); // undefined = loading, null = not logged in
@@ -31,7 +33,7 @@ export default function PostDetailPage() {
   const [recentPosts, setRecentPosts] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
 
-  // Fetch post data
+  // Fetch post data + user data
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -57,15 +59,21 @@ export default function PostDetailPage() {
         });
         setUser(res.data.data);
       } catch {
-        setUser(null);
+        setUser(null); // not logged in
       }
     };
 
     fetchPost();
-    fetchUser();
-  }, [id]);
 
-  // Profile Sidebar Data
+    // 🔒 로그인한 경우에만 /auth/me 호출
+    if (isLoggedIn) {
+      fetchUser();
+    } else {
+      setUser(null);
+    }
+  }, [id, isLoggedIn]);
+
+  // Fetch profile sidebar if not in community
   useEffect(() => {
     const fetchSidebarData = async () => {
       if (!post?.community && post?.author?.username) {
