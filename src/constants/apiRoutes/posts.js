@@ -12,8 +12,11 @@ export const POSTS = {
     DELETE: (postId) => ({ method: "DELETE", url: `/posts/${postId}` }),
   
     LIKE: (postId) => ({ method: "POST", url: `/posts/${postId}/likes` }),
+    DISLIKE: (postId) => ({ method: "POST", url: `/posts/${postId}/dislikes` }),
     LIKE_COUNT: (postId) => ({ method: "GET", url: `/posts/${postId}/likes` }),
     LIKE_USERS: (postId) => ({ method: "GET", url: `/posts/${postId}/likes/users` }),
+
+    GET_REACTION: (postId) => ({ method: "GET", url: `/posts/${postId}/reaction/me` }),
   
     BOOKMARK: (postId) => ({ method: "POST", url: `/posts/${postId}/bookmark` }),
     REPORT: (postId) => ({ method: "POST", url: `/posts/${postId}/report` }),

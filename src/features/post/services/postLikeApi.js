@@ -18,4 +18,8 @@ export const getPostLikeUsers = async (postId) => {
   return res.data.data;
 };
 
-  
+export const getPostReaction = async (postId) => {
+  const { method, url } = POSTS.GET_REACTION(postId);
+  const res = await axios({ method, url });
+  return res.data.data; // "LIKE", "DISLIKE", or null
+};
