@@ -100,7 +100,7 @@ export default function CommunityList() {
     try {
       const { method, url } = COMMUNITIES.MY;
       const response = await axios({ method, url });
-      const fetched = response.data?.data || [];git       
+      const fetched = response.data?.data || [];    
 
       setCommunities(fetched);
       setJoinedCommunities(fetched.map((c) => c.id));
