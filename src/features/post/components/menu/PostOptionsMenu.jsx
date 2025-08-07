@@ -25,6 +25,7 @@ export default function PostOptionsMenu({
   onReport,
   onHide,
 }) {
+
   const [open, setOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -43,23 +44,28 @@ export default function PostOptionsMenu({
   // Load follow status
   useEffect(() => {
     async function fetchFollowStatus() {
-      if (!isOwner && authorUsername) {
-        try {
-          const res = await checkIsFollowing(authorUsername);
-          setIsFollowing(res.data.data);
-        } catch (err) {
-          console.error("Failed to check follow status:", err);
-        } finally {
-          setFollowLoading(false);
-        }
+      
+      if (!isLoggedIn || isOwner || !authorUsername) return;
+
+      try {
+        const res = await checkIsFollowing(authorUsername);
+        setIsFollowing(res.data.data);
+      } catch (err) {
+        console.error("Failed to check follow status:", err);
+      } finally {
+        setFollowLoading(false);
       }
     }
+
     fetchFollowStatus();
-  }, [authorUsername]);
+  }, [authorUsername, isOwner, isLoggedIn]);
 
   // Load bookmark status 
   useEffect(() => {
     async function fetchBookmarkStatus() {
+      
+      if (!isLoggedIn || isOwner || !authorUsername) return;
+
       if (postId) {
         try {
           const res = await checkIsBookmarked(postId);
