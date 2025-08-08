@@ -22,21 +22,23 @@ export function DialogHeader({ children }) {
   return <div className="mb-4">{children}</div>;
 }
 
-export function DialogTitle({ children }) {
-  return (
-    <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-      {children}
-    </h2>
-  );
-}
+export const DialogTitle = ({ children, ...props }) => (
+  <DialogPrimitive.Title
+    className="text-lg font-semibold text-gray-900 dark:text-white"
+    {...props}
+  >
+    {children}
+  </DialogPrimitive.Title>
+);
 
-export function DialogDescription({ children }) {
-  return (
-    <p className="text-base text-gray-600 dark:text-gray-400">
-      {children}
-    </p>
-  );
-}
+export const DialogDescription = ({ children, ...props }) => (
+  <DialogPrimitive.Description
+    className="text-base text-gray-600 dark:text-gray-400"
+    {...props}
+  >
+    {children}
+  </DialogPrimitive.Description>
+);
 
 export function DialogFooter({ children }) {
   return <div className="mt-6 flex justify-end gap-2">{children}</div>;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { togglePostHide } from "@post/services/postApi";
 import { ROUTES } from "@/constants/apiRoutes/routes";
+import { deletePost } from "@post/services/postApi"; 
 
 import PostHeader from "./PostHeader";
 import PostMediaSlider from "./PostMediaSlider";
@@ -9,7 +10,7 @@ import PostContent from "./PostContent";
 import PostActions from "./PostActions";
 import PostHiddenCard from "./PostHiddenCard";
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, onDeleted }) {
   const navigate = useNavigate();
   const hasFiles = post.fileUrls && post.fileUrls.length > 0;
 
@@ -42,6 +43,21 @@ export default function PostCard({ post }) {
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await deletePost(post.id);
+      
+      if (onDeleted) {
+        onDeleted(post.id);
+      } else {
+        
+        navigate(ROUTES.HOME);
+      }
+    } catch (e) {
+      console.error("Delete failed", e);
+    }
+  };
+
   const handleCardClick = () => {
     if (!isHidden) {
       navigate(ROUTES.POST_DETAIL(post.id));
@@ -64,7 +80,7 @@ export default function PostCard({ post }) {
           <>
             <PostHeader
               post={post}
-              onDelete={() => {}}
+              onDelete={handleDelete}
               onHide={handleToggleHide}
               isHidden={isHidden}
             />

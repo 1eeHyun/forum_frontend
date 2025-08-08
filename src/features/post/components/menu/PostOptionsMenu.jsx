@@ -17,6 +17,13 @@ import ConfirmModal from "@/components/ui/ConfirmModal";
 import { checkIsFollowing, followUserToggle } from "@profile/services/followApi";
 import { checkIsBookmarked, toggleBookmark } from "@bookmark/services/bookmarkApi";
 
+/**
+ * PostOptionsMenu
+ * - Context menu for post actions
+ * - Fixes navigation on delete by stopping event propagation in all menu interactions
+ * - Closes on outside click
+ * - Shows confirm modal before delete
+ */
 export default function PostOptionsMenu({
   authorUsername,
   postId,
@@ -25,78 +32,111 @@ export default function PostOptionsMenu({
   onReport,
   onHide,
 }) {
-
+  // Menu open/close
   const [open, setOpen] = useState(false);
+
+  // Delete confirm modal open/close
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  // Follow state
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(true);
+
+  // Bookmark state
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(true);
 
-  const menuRef = useRef();
+  // Refs & router
+  const menuRef = useRef(null);
   const { username: loggedInUsername, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
+  // Owner check
   const isOwner =
     isLoggedIn &&
     loggedInUsername?.toLowerCase() === authorUsername?.toLowerCase();
 
-  // Load follow status
+  // Fetch follow status (only when needed)
   useEffect(() => {
-    async function fetchFollowStatus() {
-      
-      if (!isLoggedIn || isOwner || !authorUsername) return;
+    let ignore = false;
 
+    async function fetchFollowStatus() {
+      if (!isLoggedIn || isOwner || !authorUsername) {
+        setFollowLoading(false);
+        return;
+      }
       try {
         const res = await checkIsFollowing(authorUsername);
-        setIsFollowing(res.data.data);
+        if (!ignore) setIsFollowing(!!res.data?.data);
       } catch (err) {
         console.error("Failed to check follow status:", err);
       } finally {
-        setFollowLoading(false);
+        if (!ignore) setFollowLoading(false);
       }
     }
 
+    setFollowLoading(true);
     fetchFollowStatus();
-  }, [authorUsername, isOwner, isLoggedIn]);
 
-  // Load bookmark status 
+    return () => {
+      ignore = true;
+    };
+  }, [authorUsername, isLoggedIn, isOwner]);
+
+  // Fetch bookmark status (only when needed)
   useEffect(() => {
-    async function fetchBookmarkStatus() {
-      
-      if (!isLoggedIn || isOwner || !authorUsername) return;
+    let ignore = false;
 
-      if (postId) {
-        try {
-          const res = await checkIsBookmarked(postId);
-          setIsBookmarked(res.data.data);
-        } catch (err) {
-          console.error("Failed to check bookmark status:", err);
-        } finally {
-          setBookmarkLoading(false);
-        }
+    async function fetchBookmarkStatus() {
+      if (!isLoggedIn || isOwner || !postId) {
+        setBookmarkLoading(false);
+        return;
+      }
+      try {
+        const res = await checkIsBookmarked(postId);
+        if (!ignore) setIsBookmarked(!!res.data?.data);
+      } catch (err) {
+        console.error("Failed to check bookmark status:", err);
+      } finally {
+        if (!ignore) setBookmarkLoading(false);
       }
     }
-    fetchBookmarkStatus();
-  }, [postId]);
 
-  // Click outside to close menu
+    setBookmarkLoading(true);
+    fetchBookmarkStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, [postId, isLoggedIn, isOwner]);
+
+  // Close menu on outside click
   useEffect(() => {
     function handleClickOutside(e) {
+      // If click is outside the menu, close it
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside, true);
+      return () => document.removeEventListener("mousedown", handleClickOutside, true);
+    }
+  }, [open]);
 
+  // Guard: hide menu for guests (optional; remove if you want menu for guests too)
   if (!isLoggedIn) return null;
 
+  // Common menu item styles
   const menuItemStyle =
     "flex items-center gap-2 w-full px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700";
 
-  const handleFollowToggle = async () => {
+  // Utility: stop propagation
+  const stop = (e) => e.stopPropagation();
+
+  // Follow toggle
+  const handleFollowToggle = async (e) => {
+    e?.stopPropagation?.();
     try {
       await followUserToggle(authorUsername);
       setIsFollowing((prev) => !prev);
@@ -105,7 +145,9 @@ export default function PostOptionsMenu({
     }
   };
 
-  const handleBookmarkToggle = async () => {
+  // Bookmark toggle
+  const handleBookmarkToggle = async (e) => {
+    e?.stopPropagation?.();
     try {
       await toggleBookmark(postId);
       setIsBookmarked((prev) => !prev);
@@ -115,27 +157,43 @@ export default function PostOptionsMenu({
   };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div
+      className="relative"
+      ref={menuRef}
+      onClick={stop} // Prevent bubbling to parent cards
+      data-post-options-open={open ? "true" : "false"} // Helpful for parent guards if needed
+    >
+      {/* Kebab button */}
       <button
+        type="button"
         onClick={(e) => {
-          e.stopPropagation(); // Prevent menu from closing
+          e.stopPropagation();
           setOpen((prev) => !prev);
         }}
         className="ml-2 p-2 rounded-full text-gray-500 hover:text-black dark:hover:text-white hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Open post options"
       >
         <MoreHorizontal className="w-5 h-5" />
       </button>
 
+      {/* Menu popover */}
       {open && (
         <div
-          className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-600 rounded-md z-10"
-          onClick={(e) => e.stopPropagation()} // Prevent menu click from bubbling
+          className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-md border border-gray-200 dark:border-gray-600 rounded-md z-20 py-1"
+          role="menu"
+          onClick={stop} // Prevent bubbling from items
         >
           {isOwner ? (
             <>
+              {/* Edit */}
               <button
                 className={menuItemStyle}
-                onClick={() => {
+                type="button"
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
                   setOpen(false);
                   if (postId) {
                     navigate(ROUTES.POST_EDIT(postId));
@@ -147,9 +205,14 @@ export default function PostOptionsMenu({
                 <Pencil className="w-4 h-4" />
                 Edit
               </button>
+
+              {/* Delete (opens confirm) */}
               <button
                 className={`${menuItemStyle} text-red-500`}
-                onClick={() => {
+                type="button"
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
                   setOpen(false);
                   setIsConfirmOpen(true);
                 }}
@@ -160,12 +223,16 @@ export default function PostOptionsMenu({
             </>
           ) : (
             <>
+              {/* Follow / Unfollow */}
               {!followLoading && (
                 <button
                   className={menuItemStyle}
-                  onClick={() => {
+                  type="button"
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setOpen(false);
-                    handleFollowToggle();
+                    handleFollowToggle(e);
                   }}
                 >
                   {isFollowing ? (
@@ -182,12 +249,16 @@ export default function PostOptionsMenu({
                 </button>
               )}
 
+              {/* Save / Unsave */}
               {!bookmarkLoading && (
                 <button
                   className={menuItemStyle}
-                  onClick={() => {
+                  type="button"
+                  role="menuitem"
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setOpen(false);
-                    handleBookmarkToggle();
+                    handleBookmarkToggle(e);
                   }}
                 >
                   {isBookmarked ? (
@@ -204,9 +275,13 @@ export default function PostOptionsMenu({
                 </button>
               )}
 
+              {/* Hide */}
               <button
                 className={menuItemStyle}
-                onClick={() => {
+                type="button"
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
                   setOpen(false);
                   onHide?.();
                 }}
@@ -215,9 +290,13 @@ export default function PostOptionsMenu({
                 Hide
               </button>
 
+              {/* Report */}
               <button
                 className={`${menuItemStyle} text-red-500`}
-                onClick={() => {
+                type="button"
+                role="menuitem"
+                onClick={(e) => {
+                  e.stopPropagation();
                   setOpen(false);
                   onReport?.();
                 }}
@@ -230,14 +309,19 @@ export default function PostOptionsMenu({
         </div>
       )}
 
+      {/* Confirm delete modal */}
       <ConfirmModal
         open={isConfirmOpen}
         title="Delete Post"
         description="Are you sure you want to delete this post? This action cannot be undone."
-        onCancel={() => setIsConfirmOpen(false)}
-        onConfirm={() => {
+        onCancel={(e) => {
+          e?.stopPropagation?.();
           setIsConfirmOpen(false);
-          onDelete?.();
+        }}
+        onConfirm={(e) => {
+          e?.stopPropagation?.();
+          setIsConfirmOpen(false);
+          onDelete?.(e);
         }}
       />
     </div>

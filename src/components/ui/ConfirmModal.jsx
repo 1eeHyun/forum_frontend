@@ -1,8 +1,6 @@
-
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
@@ -11,23 +9,29 @@ import { Button } from "@/components/ui/button";
 
 export default function ConfirmModal({
   open,
-  title,
-  description,
+  title = "Delete Post",
+  description = "Are you sure you want to delete this post? This action cannot be undone.",
   onCancel,
   onConfirm,
 }) {
   return (
-    <Dialog open={open} onOpenChange={onCancel}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onCancel?.(); }}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="outline" onClick={onCancel}>
+        {/* Title/Description를 Content */}
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>{description}</DialogDescription>
+
+        <DialogFooter className="mt-4">
+          <Button
+            variant="outline"
+            onClick={(e) => { e.stopPropagation?.(); onCancel?.(e); }}
+          >
             Cancel
           </Button>
-          <Button variant="destructive" onClick={onConfirm}>
+          <Button
+            variant="destructive"
+            onClick={(e) => { e.stopPropagation?.(); onConfirm?.(e); }}
+          >
             Delete
           </Button>
         </DialogFooter>
