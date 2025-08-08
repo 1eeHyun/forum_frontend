@@ -83,7 +83,8 @@ export default function PostCard({ post, onDeleted }) {
               onDelete={handleDelete}
               onHide={handleToggleHide}
               isHidden={isHidden}
-            />
+            />            
+
             <div className="px-4 mt-2">
               <h3 className="text-lg font-semibold text-black dark:text-white line-clamp-2 break-words">
                 {post.title}

@@ -37,10 +37,10 @@ export default function CommentActions({
     }
     try {
       const res = await axios({
-        method: COMMENTS.MY_REACTION(commentId).method,
-        url: COMMENTS.MY_REACTION(commentId).url,
+        method: COMMENTS.HAS_LIKED(commentId).method,
+        url: COMMENTS.HAS_LIKED(commentId).url,
       });
-      setLiked(res.data?.data === "LIKE");
+      setLiked(!!res.data?.data);
     } catch (e) {
       console.error("Failed to fetch my comment reaction:", e);
       setLiked(false);

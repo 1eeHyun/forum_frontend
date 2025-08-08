@@ -17,7 +17,7 @@ export default function PostHeader({ post, onDelete, onHide, isHidden }) {
             <img
               src={post.community.imageDTO.imageUrl}
               alt={post.community.name || "Community Logo"}
-              className="w-6 h-6 rounded-full object-cover"
+              className="w-8 h-8 rounded-full object-cover"
             />
           )}
           <Link
@@ -60,7 +60,7 @@ export default function PostHeader({ post, onDelete, onHide, isHidden }) {
           onSave={() => console.log("Save Post")}
           onHide={onHide}
         />
-      </div>
-    </div>
+      </div>          
+    </div>    
   );
 }

@@ -1,22 +1,47 @@
+// CommunityHeader.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { Plus, MoreHorizontal, LogOut, FilePlus2, Settings } from "lucide-react";
+import {
+  Plus,
+  MoreHorizontal,
+  LogOut,
+  FilePlus2,
+  Settings,
+  Share2,
+  Flag,
+  Ban,
+  Star,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/apiRoutes/routes";
-import { leaveCommunity } from "@community/services/communityApi";
+import {
+  leaveCommunity,
+  toggleFavoriteCommunity,
+} from "@community/services/communityApi";
 
 export default function CommunityHeader({
   community,
   onJoinClick,
-  showJoinButton, // parent decides
+  showJoinButton,     // Parent decides (true when NOT a member/manager)
   role,
-  onLeaveSuccess, // parent refetch after leaving
+  onLeaveSuccess,     // Parent refetch after leaving
+  onReportClick,      // Optional: parent opens report modal
+  onBlockToggle,      // Optional: parent toggles block
+  onRefreshCommunity, // Parent fetchCommunityDetail to sync server state
 }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [favorite, setFavorite] = useState(!!community?.favorite);
   const menuRef = useRef(null);
   const navigate = useNavigate();
 
-  // Close options menu on outside click
+  const isMember = role === "MANAGER" || role === "MEMBER";
+
+  // Keep local favorite in sync with parent community prop (e.g., after refresh)
+  useEffect(() => {
+    setFavorite(!!community?.favorite);
+  }, [community?.favorite]);
+
+  // Close menu on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -27,26 +52,76 @@ export default function CommunityHeader({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showMenu]);
 
-  const isMember = role === "MANAGER" || role === "MEMBER";
-
   // Navigate to create-post with preselected community
   const handleCreatePost = () => {
     setShowMenu(false);
     navigate("/create-post", { state: { community } });
   };
 
-  // Open leave modal from menu
+  // Favorite toggle: optimistic update + rollback on failure + refresh from server
+  const handleFavoriteToggle = async () => {
+    try {
+      setShowMenu(false);
+      setFavorite((prev) => !prev);               // optimistic
+      await toggleFavoriteCommunity(community.id);
+      await onRefreshCommunity?.();               // sync from server (ensures refresh correctness)
+    } catch (e) {
+      console.error("Failed to toggle favorite", e);
+      setFavorite((prev) => !prev);               // rollback
+    }
+  };
+
+  // Share link (Web Share API fallback to clipboard)
+  const handleShare = async () => {
+    setShowMenu(false);
+    const shareUrl = `${window.location.origin}/communities/${community.id}`;
+    const shareData = {
+      title: community.name,
+      text: `Check out ${community.name}`,
+      url: shareUrl,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Link copied to clipboard.");
+      } else {
+        const tmp = document.createElement("input");
+        tmp.value = shareUrl;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand("copy");
+        document.body.removeChild(tmp);
+        alert("Link copied to clipboard.");
+      }
+    } catch (e) {
+      console.error("Share failed", e);
+    }
+  };
+
+  const handleReport = () => {
+    setShowMenu(false);
+    onReportClick?.(community);
+  };
+
+  const handleBlockToggle = () => {
+    setShowMenu(false);
+    onBlockToggle?.(community);
+  };
+
+  // Open leave modal
   const openLeaveModal = () => {
     setShowMenu(false);
     setShowLeaveModal(true);
   };
 
-  // Confirm leave from modal
+  // Confirm leave
   const handleConfirmLeave = async () => {
     try {
       await leaveCommunity(community.id);
       setShowLeaveModal(false);
-      onLeaveSuccess?.(); // parent will refetch role & posts
+      onLeaveSuccess?.(); // parent refetches role & posts
     } catch (err) {
       console.error("Failed to leave community:", err);
     }
@@ -79,13 +154,13 @@ export default function CommunityHeader({
       </div>
 
       {/* Action bar */}
-      <div className="px-0 py-4 flex justify-between items-center flex-wrap gap-4 text-white">
+      <div className="px-0 py-4 flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold font-noto text-black dark:text-white">
           {community.name}
         </h1>
 
         <div className="flex items-center gap-2">
-          {/* Top-level Create for members/managers */}
+          {/* Top-level "Create Post" for members/managers */}
           {isMember && (
             <button
               className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white rounded-full shadow-lg hover:from-indigo-400 hover:via-purple-400 hover:to-pink-400 transition-all duration-300 ease-in-out"
@@ -96,13 +171,11 @@ export default function CommunityHeader({
             </button>
           )}
 
-          {/* Join (shown whenever NOT a member/manager) */}
+          {/* Join for non-members */}
           {showJoinButton && (
             <button
               onClick={onJoinClick}
-              className="px-6 py-2 rounded-full text-sm font-semibold 
-                         bg-gray-800 text-white shadow-lg 
-                         hover:bg-gray-700 transition-all duration-300 ease-in-out"
+              className="px-6 py-2 rounded-full text-sm font-semibold bg-gray-800 text-white shadow-lg hover:bg-gray-700 transition-all duration-300 ease-in-out"
             >
               Join
             </button>
@@ -121,9 +194,8 @@ export default function CommunityHeader({
             </button>
 
             {showMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-10 overflow-hidden">                
-
-                {/* Member/Manager: Create inside menu */}
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-10 overflow-hidden">
+                {/* Create (member/manager) */}
                 {isMember && (
                   <button
                     onClick={handleCreatePost}
@@ -134,7 +206,57 @@ export default function CommunityHeader({
                   </button>
                 )}
 
-                {/* Member-only: Leave */}
+                {/* Favorite (member/manager) */}
+                {isMember && (
+                  <button
+                    onClick={handleFavoriteToggle}
+                    className="w-full px-3 py-2 text-sm text-black dark:text-white flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700"
+                  >
+                    <Star
+                      size={18}
+                      className={
+                        favorite
+                          ? "text-yellow-500 fill-yellow-500"
+                          : "text-gray-500 dark:text-gray-300"
+                      }
+                    />
+                    {favorite ? "Unfavorite" : "Favorite"}
+                  </button>
+                )}
+
+                {/* Share (everyone) */}
+                <button
+                  onClick={handleShare}
+                  className="w-full px-3 py-2 text-sm text-black dark:text-white flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <Share2 size={18} />
+                  Share
+                </button>
+
+                {/* Report (member/guest) */}                
+                {role != "MANAGER" && (
+                  <button
+                    onClick={handleReport}
+                    className="w-full px-3 py-2 text-sm text-black dark:text-white flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700"
+                  >
+                    <Flag size={18} />
+                    Report
+                  </button>
+                )}
+                
+
+                {/* Block guest */}
+                {role != "MEMBER" && role != "MANAGER" && (
+                  <button
+                    onClick={handleBlockToggle}
+                    className="w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/30 border-b border-gray-200 dark:border-gray-700"
+                  >
+                    <Ban size={18} />
+                    Block
+                  </button>
+                )}
+
+                {/* Leave (member only) */}
                 {role === "MEMBER" && (
                   <button
                     onClick={openLeaveModal}
@@ -145,7 +267,7 @@ export default function CommunityHeader({
                   </button>
                 )}
 
-                {/* Manager-only: Manage */}
+                {/* Manage (manager only) */}
                 {role === "MANAGER" && (
                   <button
                     onClick={() => {
@@ -164,17 +286,17 @@ export default function CommunityHeader({
         </div>
       </div>
 
-      {/* Leave Modal — same style as your Join modal */}
+      {/* Leave modal */}
       {showLeaveModal && (
         <div
           className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
-          onClick={() => setShowLeaveModal(false)} // click outside to close
+          onClick={() => setShowLeaveModal(false)}
         >
           <div
             className="bg-white dark:bg-[#1a1d21] p-6 rounded-xl shadow-lg text-black dark:text-white w-[90%] max-w-sm"
-            onClick={(e) => e.stopPropagation()} // prevent bubble to backdrop
+            onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold mb-4">Leave this community?</h2>
+            <h2 className="text-lg font-bold mb-2">Leave this community?</h2>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
               You will no longer be a member and may lose member-only privileges.
             </p>

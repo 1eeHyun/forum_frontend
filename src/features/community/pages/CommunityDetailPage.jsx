@@ -1,3 +1,4 @@
+// CommunityDetailPage.jsx
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { fetchCommunityInfo, joinCommunity } from "@community/services/communityApi";
@@ -17,7 +18,7 @@ const SORT_OPTIONS = [
   { label: "Oldest", value: "oldest" },
 ];
 
-// Styles
+// UI styles
 const STYLES = {
   categoryFilter:
     "bg-gray-200 dark:bg-[#2b2f33] text-sm text-black dark:text-white px-3 py-1 rounded-full border border-gray-400 dark:border-gray-600",
@@ -32,7 +33,7 @@ const STYLES = {
   hoverRed: "hover:text-red-500 text-gray-500 dark:text-gray-400",
 };
 
-// Query param helper
+// Helper to update query params
 const updateQueryParams = (params, navigate, location) => {
   const updated = new URLSearchParams(location.search);
   Object.keys(params).forEach((k) => {
@@ -61,15 +62,27 @@ export default function CommunityDetailPage() {
 
   const sortDropdownRef = useRef(null);
 
+  // Fetch community detail and normalize favorite flag so UI is stable after refresh
   const fetchCommunityDetail = async () => {
     try {
-      const communityData = await fetchCommunityInfo(id, "detail");
-      setCommunity(communityData);
+      const data = await fetchCommunityInfo(id, "detail");
+      const normalized = {
+        ...data,
+        // Normalize favorite from possible backend keys (adjust as needed)
+        favorite:
+          data?.favorite ??
+          data?.isFavorite ??
+          data?.userContext?.favorite ??
+          data?.memberContext?.favorite ??
+          false,
+      };
+      setCommunity(normalized);      
     } catch (err) {
       console.error("Failed to fetch community:", err);
     }
   };
 
+  // Fetch community posts list
   const fetchCommunityPosts = async () => {
     try {
       const params = new URLSearchParams();
@@ -82,6 +95,7 @@ export default function CommunityDetailPage() {
     }
   };
 
+  // Confirm join flow
   const handleConfirmJoin = async () => {
     try {
       await joinCommunity(id);
@@ -92,7 +106,7 @@ export default function CommunityDetailPage() {
     }
   };
 
-  // Initial + deps
+  // Initial load + changes by id/sort/category
   useEffect(() => {
     fetchCommunityDetail();
     fetchCommunityPosts();
@@ -121,9 +135,7 @@ export default function CommunityDetailPage() {
 
   const { role } = community || {};
   const isMember = role === "MANAGER" || role === "MEMBER";
-
-  // ✅ Show Join whenever NOT a member/manager (guest/null/undefined all show)
-  const showJoinButton = !isMember;
+  const showJoinButton = !isMember; // Show Join for non-members
 
   const CategoryFilter = () => {
     if (!categoryFromQuery) return null;
@@ -202,16 +214,17 @@ export default function CommunityDetailPage() {
               });
               if (!maybe) openLoginModal();
             } else {
-              // Already logged in but not a member → show join confirm
               setShowJoinModal(true);
             }
           }}
-          // After leaving, refetch to reflect new role → Join shows automatically
+          // After leaving, refetch to reflect new role and favorite etc.
           onLeaveSuccess={() => {
             fetchCommunityDetail();
             fetchCommunityPosts();
           }}
           onCategoryAdded={fetchCommunityDetail}
+          // Allow child to trigger refresh after favorite toggle
+          onRefreshCommunity={fetchCommunityDetail}
         />
 
         <CategoryFilter />
@@ -223,7 +236,7 @@ export default function CommunityDetailPage() {
           </div>
         )}
 
-        {/* Join Modal */}
+        {/* Join modal */}
         {showJoinModal && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className={STYLES.modalContainer}>
