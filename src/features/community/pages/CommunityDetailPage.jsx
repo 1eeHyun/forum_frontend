@@ -1,10 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { fetchCommunityInfo } from "@community/services/communityApi";
-import { AlignLeft } from "lucide-react"
-import { joinCommunity } from "@community/services/communityApi";;
+import { fetchCommunityInfo, joinCommunity } from "@community/services/communityApi";
+import { AlignLeft } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import useLoginModal from "@/hooks/auth/useLoginModal";
 
-import axios from "@/api/axios";
 import CommunityHeader from "@community/components/CommunityHeader";
 import PostList from "@post/components/list/PostList";
 import CommunityRightSidebar from "@community/components/sidebar/CommunityRightSidebar";
@@ -21,7 +21,8 @@ const SORT_OPTIONS = [
 const STYLES = {
   categoryFilter:
     "bg-gray-200 dark:bg-[#2b2f33] text-sm text-black dark:text-white px-3 py-1 rounded-full border border-gray-400 dark:border-gray-600",
-  sortButton: "flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white",
+  sortButton:
+    "flex items-center gap-1 text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white",
   modalContainer:
     "bg-white dark:bg-[#1a1d21] p-6 rounded-xl shadow-lg text-black dark:text-white w-[90%] max-w-sm",
   modalButton:
@@ -31,14 +32,14 @@ const STYLES = {
   hoverRed: "hover:text-red-500 text-gray-500 dark:text-gray-400",
 };
 
-// Utility function to update query params
+// Query param helper
 const updateQueryParams = (params, navigate, location) => {
-  const updatedParams = new URLSearchParams(location.search);
-  Object.keys(params).forEach((key) => {
-    if (params[key]) updatedParams.set(key, params[key]);
-    else updatedParams.delete(key);
+  const updated = new URLSearchParams(location.search);
+  Object.keys(params).forEach((k) => {
+    if (params[k]) updated.set(k, params[k]);
+    else updated.delete(k);
   });
-  navigate({ search: updatedParams.toString() });
+  navigate({ search: updated.toString() });
 };
 
 export default function CommunityDetailPage() {
@@ -46,9 +47,10 @@ export default function CommunityDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { isLoggedIn } = useAuth();
+  const { open: openLoginModal } = useLoginModal();
+
   const query = new URLSearchParams(location.search);
-  const postIdFromQuery = query.get("postId");
-  const commentIdFromQuery = query.get("commentId");
   const categoryFromQuery = query.get("category");
 
   const [community, setCommunity] = useState(null);
@@ -72,9 +74,7 @@ export default function CommunityDetailPage() {
     try {
       const params = new URLSearchParams();
       params.set("sort", sortOption);
-      if (categoryFromQuery) {
-        params.set("category", categoryFromQuery);
-      }
+      if (categoryFromQuery) params.set("category", categoryFromQuery);
       const postData = await fetchCommunityInfo(id, "posts", params);
       setPosts(postData);
     } catch (err) {
@@ -86,18 +86,27 @@ export default function CommunityDetailPage() {
     try {
       await joinCommunity(id);
       setShowJoinModal(false);
-      fetchCommunityDetail();
-      fetchCommunityPosts();
+      await Promise.all([fetchCommunityDetail(), fetchCommunityPosts()]);
     } catch (err) {
       console.error("Failed to join community:", err);
     }
   };
 
+  // Initial + deps
   useEffect(() => {
     fetchCommunityDetail();
     fetchCommunityPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, sortOption, categoryFromQuery]);
 
+  // Refresh when login state changes
+  useEffect(() => {
+    if (!id) return;
+    fetchCommunityDetail();
+    fetchCommunityPosts();
+  }, [isLoggedIn, id]);
+
+  // Close sort dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
@@ -110,7 +119,11 @@ export default function CommunityDetailPage() {
 
   if (!community) return <div className="text-black dark:text-white p-4">Loading...</div>;
 
-  const { role } = community;
+  const { role } = community || {};
+  const isMember = role === "MANAGER" || role === "MEMBER";
+
+  // ✅ Show Join whenever NOT a member/manager (guest/null/undefined all show)
+  const showJoinButton = !isMember;
 
   const CategoryFilter = () => {
     if (!categoryFromQuery) return null;
@@ -173,15 +186,31 @@ export default function CommunityDetailPage() {
   );
 
   return (
-    <MainLayout
-      rightSidebar={<CommunityRightSidebar communityId={community.id} />}
-    >
+    <MainLayout rightSidebar={<CommunityRightSidebar communityId={community.id} />}>
       <div className="text-black dark:text-white">
         <CommunityHeader
           community={community}
-          showJoinButton={!role || role === "GUEST"}
-          onJoinClick={() => setShowJoinModal(true)}
           role={role}
+          showJoinButton={showJoinButton}
+          onJoinClick={() => {
+            if (!isLoggedIn) {
+              const maybe = openLoginModal?.({
+                onSuccess: () => {
+                  fetchCommunityDetail();
+                  fetchCommunityPosts();
+                },
+              });
+              if (!maybe) openLoginModal();
+            } else {
+              // Already logged in but not a member → show join confirm
+              setShowJoinModal(true);
+            }
+          }}
+          // After leaving, refetch to reflect new role → Join shows automatically
+          onLeaveSuccess={() => {
+            fetchCommunityDetail();
+            fetchCommunityPosts();
+          }}
           onCategoryAdded={fetchCommunityDetail}
         />
 
@@ -200,16 +229,10 @@ export default function CommunityDetailPage() {
             <div className={STYLES.modalContainer}>
               <h2 className="text-lg font-bold mb-4">Join this community?</h2>
               <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => setShowJoinModal(false)}
-                  className={STYLES.modalButton}
-                >
+                <button onClick={() => setShowJoinModal(false)} className={STYLES.modalButton}>
                   Cancel
                 </button>
-                <button
-                  onClick={handleConfirmJoin}
-                  className={STYLES.confirmButton}
-                >
+                <button onClick={handleConfirmJoin} className={STYLES.confirmButton}>
                   Join
                 </button>
               </div>
