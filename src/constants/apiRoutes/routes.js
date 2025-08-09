@@ -30,5 +30,8 @@ export const ROUTES = {
     MY_COMMUNITY_RECENT: "/posts/my-communities/recent",
     TOP_WEEKLY_POSTS: "/posts/top-weekly",
     RECENT_VIEWED_POSTS: "/recent",
+
+    TAGS: "/tags",
+    TAG: (tagName) => `/tags/${encodeURIComponent(tagName)}`,
   };
   

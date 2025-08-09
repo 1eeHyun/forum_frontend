@@ -26,6 +26,8 @@ import EditUsername from "@profile/pages/edit/EditUsername";
 import EditProfileImage from "@profile/pages/edit/EditProfileImage";
 import CommunityListPage from "@/features/community/pages/CommunityListPage";
 
+import TagPage from "@tag/pages/TagPage";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -41,6 +43,8 @@ export default function AppRoutes() {
       <Route path="/trending" element={<TrendingPage/>} />
 
       <Route path="/posts/:id" element={<PostDetailPage />} />
+
+      <Route path="/tags/:tagName" element={<TagPage />} />
 
       <Route
         path="/bookmarks"
