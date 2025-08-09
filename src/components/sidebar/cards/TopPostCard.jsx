@@ -8,28 +8,37 @@ import { POST_LABELS } from "@/features/post/constants/postLabels";
 export default function RelatedPostCard({ post }) {
   const navigate = useNavigate();
   const [visible, setVisible] = useState(true);
-
   if (!visible) return null;
 
   const media = post.fileUrls?.find(
     (file) => file.type === "IMAGE" || file.type === "VIDEO"
   );
+
+  // Tags first; fallback to community
+  const tags = Array.isArray(post.tags) ? post.tags.filter(Boolean) : [];
+  const hasTags = tags.length > 0;
+
   const communityImage = post.communityProfilePicture?.imageUrl;
   const hasCommunity = post.communityId && post.communityName && communityImage;
 
-  const openPost = () => {
-    navigate(ROUTES.POST_DETAIL(post.id));
-  };
-
+  const openPost = () => navigate(ROUTES.POST_DETAIL(post.id));
   const openProfile = (e) => {
     e.stopPropagation();
     navigate(ROUTES.PROFILE(post.author?.username));
   };
-
   const openCommunity = (e) => {
     e.stopPropagation();
     navigate(ROUTES.COMMUNITY(post.communityId));
   };
+  const openTag = (e, t) => {
+    e.stopPropagation();
+    const path = typeof ROUTES.TAG === "function" ? ROUTES.TAG(t) : `/tags/${encodeURIComponent(t)}`;
+    navigate(path);
+  };
+
+  const MAX_TAGS = 3;
+  const shownTags = tags.slice(0, MAX_TAGS);
+  const moreCount = Math.max(0, tags.length - shownTags.length);
 
   if (post.isHidden) {
     return (
@@ -40,6 +49,7 @@ export default function RelatedPostCard({ post }) {
             setVisible(false);
           }}
           className="absolute top-2 right-2 text-muted hover:text-danger"
+          aria-label="Dismiss"
         >
           <X size={16} />
         </button>
@@ -65,13 +75,14 @@ export default function RelatedPostCard({ post }) {
           setVisible(false);
         }}
         className="absolute top-2 right-2 text-muted hover:text-danger"
+        aria-label="Dismiss"
       >
         <X size={16} />
       </button>
 
       {/* Media Thumbnail */}
-      {media && (
-        media.type === "IMAGE" ? (
+      {media &&
+        (media.type === "IMAGE" ? (
           <img
             src={media.fileUrl}
             alt="thumbnail"
@@ -81,8 +92,8 @@ export default function RelatedPostCard({ post }) {
               openPost();
             }}
             onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "/default-thumbnail.png";
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/default-thumbnail.png";
             }}
           />
         ) : (
@@ -94,33 +105,53 @@ export default function RelatedPostCard({ post }) {
               openPost();
             }}
             onError={(e) => {
-              e.target.onerror = null;
+              e.currentTarget.onerror = null;
             }}
             muted
             playsInline
           />
-        )
-      )}
+        ))}
 
       {/* Text Section */}
       <div className="flex flex-col justify-between text-sm text-muted w-full">
-        <div className="flex items-center gap-2 mb-1">
-          {hasCommunity && (
-            <div onClick={openCommunity} className="flex items-center gap-1">
-              <img
-                src={communityImage}
-                alt="community"
-                className="w-6 h-6 rounded-full object-cover border border-card"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "/default-community.png";
-                }}
-              />
-              <span className="text-sm text-primary hover:underline cursor-pointer font-medium">
-                {post.communityName}
-              </span>
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          {hasTags ? (
+            <div className="flex items-center gap-2 flex-wrap">
+              {shownTags.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={(e) => openTag(e, t)}
+                  className="inline-flex items-center gap-1 rounded-full border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  title={`#${t}`}
+                >
+                  <span className="opacity-70">#</span>
+                  <span className="font-medium">{t}</span>
+                </button>
+              ))}
+              {moreCount > 0 && (
+                <span className="text-xs text-gray-500 dark:text-gray-400">+{moreCount} more</span>
+              )}
             </div>
+          ) : (
+            hasCommunity && (
+              <div onClick={openCommunity} className="flex items-center gap-1">
+                <img
+                  src={communityImage}
+                  alt="community"
+                  className="w-6 h-6 rounded-full object-cover border border-card"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = "/default-community.png";
+                  }}
+                />
+                <span className="text-sm text-primary hover:underline cursor-pointer font-medium">
+                  {post.communityName}
+                </span>
+              </div>
+            )
           )}
+
           <span
             onClick={openProfile}
             className="text-xs text-muted hover:underline hover:text-primary cursor-pointer"

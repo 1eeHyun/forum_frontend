@@ -191,6 +191,7 @@ export default function PostDetailPage() {
                 postId={post.id}
                 onDelete={handleDelete}
                 onHide={handleHide}
+                tags={post.tags}
               />
 
               <PostContent

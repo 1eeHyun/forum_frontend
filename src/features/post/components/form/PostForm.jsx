@@ -12,6 +12,8 @@ import MediaUploadSection from "@/features/post/components/create/upload/MediaUp
 import CommunityRightSidebar from "@community/components/sidebar/CommunityRightSidebar";
 import MainLayout from "@/layout/MainLayout";
 
+import TagInput from "@/features/post/components/create/input/TagInput";
+
 import {
   TITLE_MAX,
   CONTENT_MAX,
@@ -34,6 +36,9 @@ export default function PostForm({ mode = "create", initialData = {}, onSubmit, 
   const [selectedCommunity, setSelectedCommunity] = useState(initialData.community || null);
   const [files, setFiles] = useState(initialData.files || []);
   const [localError, setLocalError] = useState("");
+
+  // Tags state (for PUBLIC visibility)
+  const [tags, setTags] = useState(initialData.tags || []);
 
   useEffect(() => {
     const fetchCommunities = async () => {
@@ -93,6 +98,10 @@ export default function PostForm({ mode = "create", initialData = {}, onSubmit, 
     if (form.visibility === "COMMUNITY" && !form.communityId) return POST_ERRORS.COMMUNITY_REQUIRED;
     if (form.visibility === "COMMUNITY" && categories.length > 0 && !selectedCategoryId)
       return POST_ERRORS.CATEGORY_REQUIRED;
+    // If PUBLIC, require at least one tag
+    if (form.visibility === "PUBLIC" && tags.length === 0)
+      return "Public posts must have at least 1 tag.";
+    if (tags.length > 5) return "You can add up to 5 tags only.";
     return null;
   };
 
@@ -111,6 +120,8 @@ export default function PostForm({ mode = "create", initialData = {}, onSubmit, 
       communityId: form.visibility === "COMMUNITY" ? form.communityId : null,
       categoryId: selectedCategoryId,
       fileUrls: files,
+      // Send tags only for PUBLIC posts
+      tags: form.visibility === "PUBLIC" ? tags : undefined,
     };
 
     onSubmit?.(payload);
@@ -138,6 +149,14 @@ export default function PostForm({ mode = "create", initialData = {}, onSubmit, 
               onChange={handleChange}
               options={POST_VISIBILITY_OPTIONS}
             />
+
+            {/* Tag input only for PUBLIC posts */}
+            {form.visibility === "PUBLIC" && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium">Tags (max 5)</label>
+                <TagInput value={tags} onChange={setTags} max={5} />
+              </div>
+            )}
 
             {form.visibility === "COMMUNITY" && (
               <>
@@ -194,9 +213,12 @@ export default function PostForm({ mode = "create", initialData = {}, onSubmit, 
             {(localError || error) && <ErrorMessage message={localError || error} />}
 
             <div className="flex justify-end gap-3">
-              <SecondaryButton>Save Draft</SecondaryButton>
+              <SecondaryButton type="button">Save Draft</SecondaryButton>
               <PrimaryButton
-                disabled={form.visibility === "COMMUNITY" && form.communityId && categories.length === 0}
+                disabled={
+                  (form.visibility === "COMMUNITY" && form.communityId && categories.length === 0) ||
+                  (form.visibility === "PUBLIC" && tags.length === 0)
+                }
               >
                 {mode === "edit" ? "Update" : "Post"}
               </PrimaryButton>
