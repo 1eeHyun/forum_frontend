@@ -1,10 +1,8 @@
-// CommunityHeader.jsx
 import React, { useState, useEffect, useRef } from "react";
 import {
   Plus,
   MoreHorizontal,
   LogOut,
-  FilePlus2,
   Settings,
   Share2,
   Flag,
@@ -17,6 +15,7 @@ import {
   leaveCommunity,
   toggleFavoriteCommunity,
 } from "@community/services/communityApi";
+import ReportModal from "@report/components/ReportModal";
 
 export default function CommunityHeader({
   community,
@@ -31,6 +30,8 @@ export default function CommunityHeader({
   const [showMenu, setShowMenu] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [favorite, setFavorite] = useState(!!community?.favorite);
+  const [showReportModal, setShowReportModal] = useState(false);
+
   const menuRef = useRef(null);
   const navigate = useNavigate();
 
@@ -80,6 +81,7 @@ export default function CommunityHeader({
       text: `Check out ${community.name}`,
       url: shareUrl,
     };
+
     try {
       if (navigator.share) {
         await navigator.share(shareData);
@@ -100,9 +102,14 @@ export default function CommunityHeader({
     }
   };
 
+  // Report
   const handleReport = () => {
     setShowMenu(false);
-    onReportClick?.(community);
+    if (onReportClick) {
+      onReportClick(community);
+    } else {
+      setShowReportModal(true);
+    }
   };
 
   const handleBlockToggle = () => {
@@ -233,8 +240,8 @@ export default function CommunityHeader({
                   Share
                 </button>
 
-                {/* Report (member/guest) */}                
-                {role != "MANAGER" && (
+                {/* Report (member/guest) */}
+                {role !== "MANAGER" && (
                   <button
                     onClick={handleReport}
                     className="w-full px-3 py-2 text-sm text-black dark:text-white flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700"
@@ -243,10 +250,9 @@ export default function CommunityHeader({
                     Report
                   </button>
                 )}
-                
 
                 {/* Block guest */}
-                {role != "MEMBER" && role != "MANAGER" && (
+                {role !== "MEMBER" && role !== "MANAGER" && (
                   <button
                     onClick={handleBlockToggle}
                     className="w-full px-3 py-2 text-sm text-red-600 dark:text-red-400 flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-900/30 border-b border-gray-200 dark:border-gray-700"
@@ -317,6 +323,14 @@ export default function CommunityHeader({
           </div>
         </div>
       )}
+
+      {/* Report Modal (fallback) — Leave 모달과는 독립 렌더링 */}
+      <ReportModal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        target={{ type: "COMMUNITY", id: community.id, name: community.name }}
+        onSubmitted={onRefreshCommunity}
+      />
     </>
   );
 }

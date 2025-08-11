@@ -32,6 +32,7 @@ export default defineConfig({
       '@chat': path.resolve(__dirname, './src/features/chat'),
       '@trending': path.resolve(__dirname, './src/features/trending'),
       '@tag': path.resolve(__dirname, './src/features/tag'),
+      '@report': path.resolve(__dirname, './src/features/report'),
     },
   },
   server: {
