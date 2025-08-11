@@ -30,7 +30,7 @@ export default function PostOptionsMenu({
   const [bookmarkLoading, setBookmarkLoading] = useState(true);
 
   const menuRef = useRef(null);
-  const buttonRef = useRef(null);            // ⬅ 버튼 참조
+  const buttonRef = useRef(null); 
   const { username: loggedInUsername, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
@@ -38,10 +38,8 @@ export default function PostOptionsMenu({
     isLoggedIn &&
     loggedInUsername?.toLowerCase() === authorUsername?.toLowerCase();
 
-  // 메뉴 위치(state)
   const [pos, setPos] = useState({ top: 0, left: 0, width: 192 }); // w-48 = 12rem = 192px
 
-  // 버튼 클릭 시 위치 계산
   const recalcPosition = () => {
     const btn = buttonRef.current;
     if (!btn) return;
@@ -110,8 +108,7 @@ export default function PostOptionsMenu({
     fetchBookmarkStatus();
     return () => { ignore = true; };
   }, [postId, isLoggedIn, isOwner]);
-
-  // 바깥 클릭 닫기 (포털에서도 동작)
+  
   useEffect(() => {
     if (!open) return;
     const onDown = (e) => {
@@ -166,7 +163,7 @@ export default function PostOptionsMenu({
     <div className="relative" data-post-options-open={open ? "true" : "false"}>
       {/* Kebab button */}
       <button
-        ref={buttonRef}                           // ⬅ 버튼 ref
+        ref={buttonRef}                           
         type="button"
         onClick={(e) => {
           e.stopPropagation();

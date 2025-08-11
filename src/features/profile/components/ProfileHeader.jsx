@@ -1,79 +1,160 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { MoreHorizontal, MessageSquare, Share2, Flag } from "lucide-react";
 import { ROUTES } from "@/constants/apiRoutes/routes";
 import { followUserToggle, checkIsFollowing } from "@profile/services/followApi";
 import { fetchMe } from "@auth/services/authApi";
 import FollowListModal from "./modal/FollowListModal";
 import { fetchProfile } from "@profile/services/profileApi";
+import ReportModal from "@report/components/ReportModal";
 
 export default function ProfileHeader({ profile, username, isMine, posts, setProfile }) {
+  // follow state
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // lists modals
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowings, setShowFollowings] = useState(false);
+
+  // current user (for optimistic list updates)
   const [currentUser, setCurrentUser] = useState(null);
+
+  // options menu state
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef(null);
+  const btnRef = useRef(null);
+
+  // report modal (USER target)
+  const [showReportModal, setShowReportModal] = useState(false);
+
   const navigate = useNavigate();
 
+  // fetch current user
   useEffect(() => {
     fetchMe()
-      .then(res => setCurrentUser(res.data.data))
-      .catch(err => console.error("fetchMe error", err));
+      .then((res) => setCurrentUser(res.data?.data ?? null))
+      .catch((err) => console.error("fetchMe error", err));
   }, []);
 
+  // fetch follow status (if viewing someone else)
   useEffect(() => {
     if (!isMine && username) {
       checkIsFollowing(username)
-        .then(res => setIsFollowing(res.data.data))
-        .catch(err => console.error("Follow status error", err));
+        .then((res) => setIsFollowing(!!res.data?.data))
+        .catch((err) => console.error("Follow status error", err));
     }
   }, [username, isMine]);
 
+  // close options menu on outside click
+  useEffect(() => {
+    if (!showMenu) return;
+    const onDown = (e) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(e.target) &&
+        btnRef.current &&
+        !btnRef.current.contains(e.target)
+      ) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown, true);
+    return () => document.removeEventListener("mousedown", onDown, true);
+  }, [showMenu]);
+
+  // follow/unfollow handler with optimistic list sync
   const handleFollowToggle = async () => {
     if (loading) return;
     setLoading(true);
-
     try {
       await followUserToggle(username);
-      setIsFollowing(prev => !prev);
+      setIsFollowing((prev) => !prev);
 
       if (!currentUser) return;
 
       if (isMine) {
-        setProfile(prev => ({
+        // viewing my own profile -> update following list
+        setProfile((prev) => ({
           ...prev,
           followings: isFollowing
-            ? prev.followings?.filter(f => f.username !== username)
+            ? prev.followings?.filter((f) => f.username !== username)
             : [...(prev.followings || []), { username, nickname: username, imageDto: null }],
         }));
       } else {
-        setProfile(prev => ({
+        // viewing someone else's profile -> update their followers list
+        setProfile((prev) => ({
           ...prev,
           followers: isFollowing
-            ? prev.followers?.filter(f => f.username !== currentUser.username)
+            ? prev.followers?.filter((f) => f.username !== currentUser.username)
             : [...(prev.followers || []), currentUser],
         }));
       }
     } catch (err) {
-      console.error(err);
+      console.error("toggle follow failed", err);
     } finally {
       setLoading(false);
     }
   };
 
+  // navigate to DM (fallback-safe)
+  const handleMessage = () => {
+    const href =
+      typeof ROUTES?.DM === "function"
+        ? ROUTES.DM(username)
+        : typeof ROUTES?.MESSAGE === "function"
+        ? ROUTES.MESSAGE(username)
+        : `/messages?to=${encodeURIComponent(username)}`;
+    navigate(href);
+  };
+
+  // share profile link (Web Share API + fallbacks)
+  const handleShareProfile = async () => {
+    setShowMenu(false);
+    const url =
+      typeof ROUTES?.PROFILE === "function"
+        ? `${window.location.origin}${ROUTES.PROFILE(username)}`
+        : `${window.location.origin}/profile/${encodeURIComponent(username)}`;
+    const shareData = {
+      title: profile.nickname || `@${username}`,
+      text: `Check out @${username}'s profile`,
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        alert("Profile link copied to clipboard.");
+      } else {
+        // legacy fallback
+        const tmp = document.createElement("input");
+        tmp.value = url;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand("copy");
+        document.body.removeChild(tmp);
+        alert("Profile link copied to clipboard.");
+      }
+    } catch (e) {
+      console.error("share failed", e);
+    }
+  };
+
+  // open followers/followings (refresh first for fresh counts)
   const handleOpenFollowers = async () => {
     try {
       const res = await fetchProfile(username);
-      setProfile(res.data.data);
+      setProfile(res.data?.data);
       setShowFollowers(true);
     } catch (err) {
       console.error(err);
     }
   };
-
   const handleOpenFollowings = async () => {
     try {
       const res = await fetchProfile(username);
-      setProfile(res.data.data);
+      setProfile(res.data?.data);
       setShowFollowings(true);
     } catch (err) {
       console.error(err);
@@ -82,7 +163,7 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
 
   return (
     <div className="flex flex-wrap gap-6 md:gap-4 mb-8 items-start">
-      {/* Profile image section */}
+      {/* Profile image */}
       <div className="w-24 h-24 rounded-full overflow-hidden flex-shrink-0">
         <div
           className="w-full h-full"
@@ -90,18 +171,18 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
             backgroundImage: `url(${profile.imageDTO?.imageUrl})`,
             backgroundSize: "cover",
             backgroundRepeat: "no-repeat",
-            backgroundPosition: `${profile.imageDTO?.imagePositionX ?? 50}% ${profile.imageDTO?.imagePositionY ?? 50}%`,
+            backgroundPosition: `${profile.imageDTO?.imagePositionX ?? 50}% ${
+              profile.imageDTO?.imagePositionY ?? 50
+            }%`,
           }}
-        ></div>
+        />
       </div>
-  
-      {/* Profile information */}
+
+      {/* Profile info + actions */}
       <div className="flex flex-col flex-1 min-w-0">
         <div className="flex items-center flex-wrap gap-3">
-        {/* Username (handle) & Action button */}
-          <h2 className="text-lg md:text-xl text-gray-700 dark:text-white break-all">
-            @{username}
-          </h2>
+          {/* Handle */}
+          <h2 className="text-lg md:text-xl text-gray-700 dark:text-white break-all">@{username}</h2>
 
           {isMine ? (
             <button
@@ -111,25 +192,79 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
               Edit profile
             </button>
           ) : (
-            <button
-              onClick={handleFollowToggle}
-              disabled={loading}
-              className={`px-4 py-1.5 text-sm rounded text-white ${
-                isFollowing
-                  ? "bg-gray-400 dark:bg-gray-600"
-                  : "bg-blue-500 dark:bg-blue-600"
-              }`}
-            >
-              {isFollowing ? "Unfollow" : "Follow"}
-            </button>
+            <>
+              {/* Follow / Unfollow */}
+              <button
+                onClick={handleFollowToggle}
+                disabled={loading}
+                className={`px-4 py-1.5 text-sm rounded text-white ${
+                  isFollowing ? "bg-gray-400 dark:bg-gray-600" : "bg-blue-500 dark:bg-blue-600"
+                }`}
+              >
+                {isFollowing ? "Unfollow" : "Follow"}
+              </button>
+
+              {/* Message */}
+              <button
+                onClick={handleMessage}
+                className="px-4 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                title="Send message"
+              >
+                <span className="inline-flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Message
+                </span>
+              </button>
+
+              {/* Options (Share / Report) */}
+              <div className="relative">
+                <button
+                  ref={btnRef}
+                  onClick={() => setShowMenu((v) => !v)}
+                  className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                  aria-haspopup="menu"
+                  aria-expanded={showMenu}
+                  title="More options"
+                >
+                  <MoreHorizontal className="w-5 h-5" />
+                </button>
+
+                {showMenu && (
+                  <div
+                    ref={menuRef}
+                    role="menu"
+                    className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-20 overflow-hidden"
+                  >
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-100"
+                      onClick={handleShareProfile}
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Share
+                    </button>
+                    <button
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                      onClick={() => {
+                        setShowMenu(false);
+                        // Just open the report modal; ReportModal will resolve userId by username if missing.
+                        setShowReportModal(true);
+                      }}
+                    >
+                      <Flag className="w-4 h-4" />
+                      Report
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
-  
-        {/* Nickname */}        
+
+        {/* Nickname */}
         <h2 className="text-xl md:text-2xl font-semibold text-black dark:text-white break-words">
           {profile.nickname}
         </h2>
-  
+
         {/* Counts */}
         <div className="flex mt-2 gap-6 text-sm text-gray-700 dark:text-gray-300 flex-wrap">
           <span>
@@ -138,27 +273,21 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
             </span>{" "}
             posts
           </span>
-          <span
-            className="cursor-pointer hover:underline"
-            onClick={handleOpenFollowers}
-          >
+          <span className="cursor-pointer hover:underline" onClick={handleOpenFollowers}>
             <span className="font-semibold text-black dark:text-white">
               {profile.followers?.length ?? 0}
             </span>{" "}
             followers
           </span>
-          <span
-            className="cursor-pointer hover:underline"
-            onClick={handleOpenFollowings}
-          >
+          <span className="cursor-pointer hover:underline" onClick={handleOpenFollowings}>
             <span className="font-semibold text-black dark:text-white">
               {profile.followings?.length ?? 0}
             </span>{" "}
             following
           </span>
         </div>
-  
-        {/* Modals */}
+
+        {/* Follow lists modals */}
         {showFollowers && (
           <FollowListModal
             title="Followers"
@@ -174,6 +303,21 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
           />
         )}
       </div>
+
+      {/* User Report Modal (renders via Portal) */}
+      <ReportModal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        target={{
+          type: "USER",
+          id: profile?.id ?? null,                 // may be null; modal will resolve by username
+          name: profile?.nickname || `@${username}`,
+          username,                                // used by modal to set targetUsername and resolve id
+        }}
+        onSubmitted={() => {
+          // optional: refetch or toast
+        }}
+      />
     </div>
-  );  
+  );
 }
