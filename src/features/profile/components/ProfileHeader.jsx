@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { MoreHorizontal, MessageSquare, Share2, Flag } from "lucide-react";
 import { ROUTES } from "@/constants/apiRoutes/routes";
@@ -7,37 +7,41 @@ import { fetchMe } from "@auth/services/authApi";
 import FollowListModal from "./modal/FollowListModal";
 import { fetchProfile } from "@profile/services/profileApi";
 import ReportModal from "@report/components/ReportModal";
+import { ChatContext } from "@/context/ChatContext";
 
 export default function ProfileHeader({ profile, username, isMine, posts, setProfile }) {
-  // follow state
+  // Follow state
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // lists modals
+  // Lists modals
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowings, setShowFollowings] = useState(false);
 
-  // current user (for optimistic list updates)
+  // Current user (for optimistic list updates)
   const [currentUser, setCurrentUser] = useState(null);
 
-  // options menu state
+  // Options menu state
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef(null);
   const btnRef = useRef(null);
 
-  // report modal (USER target)
+  // Report modal (USER target)
   const [showReportModal, setShowReportModal] = useState(false);
 
   const navigate = useNavigate();
 
-  // fetch current user
+  // Chat helpers from context (floating chat control)
+  const { ensureRoomAndOpenByUsername } = useContext(ChatContext);
+
+  // Fetch current user
   useEffect(() => {
     fetchMe()
       .then((res) => setCurrentUser(res.data?.data ?? null))
       .catch((err) => console.error("fetchMe error", err));
   }, []);
 
-  // fetch follow status (if viewing someone else)
+  // Fetch follow status (if viewing someone else)
   useEffect(() => {
     if (!isMine && username) {
       checkIsFollowing(username)
@@ -46,7 +50,7 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
     }
   }, [username, isMine]);
 
-  // close options menu on outside click
+  // Close options menu on outside click
   useEffect(() => {
     if (!showMenu) return;
     const onDown = (e) => {
@@ -63,7 +67,7 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
     return () => document.removeEventListener("mousedown", onDown, true);
   }, [showMenu]);
 
-  // follow/unfollow handler with optimistic list sync
+  // Follow/unfollow with optimistic list sync
   const handleFollowToggle = async () => {
     if (loading) return;
     setLoading(true);
@@ -74,7 +78,7 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
       if (!currentUser) return;
 
       if (isMine) {
-        // viewing my own profile -> update following list
+        // If I am viewing my own profile, update my following list optimistically
         setProfile((prev) => ({
           ...prev,
           followings: isFollowing
@@ -82,7 +86,7 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
             : [...(prev.followings || []), { username, nickname: username, imageDto: null }],
         }));
       } else {
-        // viewing someone else's profile -> update their followers list
+        // If I am viewing someone else's profile, update their followers list optimistically
         setProfile((prev) => ({
           ...prev,
           followers: isFollowing
@@ -97,18 +101,22 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
     }
   };
 
-  // navigate to DM (fallback-safe)
-  const handleMessage = () => {
-    const href =
-      typeof ROUTES?.DM === "function"
-        ? ROUTES.DM(username)
-        : typeof ROUTES?.MESSAGE === "function"
-        ? ROUTES.MESSAGE(username)
-        : `/messages?to=${encodeURIComponent(username)}`;
-    navigate(href);
+  // Open floating chat and focus DM room with this profile user
+  const handleMessage = async () => {
+    try {
+      const presetUser = {
+        username,
+        nickname: profile?.nickname || username,
+        imageDto: profile?.imageDTO || null,
+      };
+      await ensureRoomAndOpenByUsername(username, presetUser);
+      // No navigation: floating chat opens itself and selects the room
+    } catch (e) {
+      console.error("Open chat failed", e);
+    }
   };
 
-  // share profile link (Web Share API + fallbacks)
+  // Share profile link (Web Share API + fallbacks)
   const handleShareProfile = async () => {
     setShowMenu(false);
     const url =
@@ -127,7 +135,7 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
         await navigator.clipboard.writeText(url);
         alert("Profile link copied to clipboard.");
       } else {
-        // legacy fallback
+        // Legacy fallback
         const tmp = document.createElement("input");
         tmp.value = url;
         document.body.appendChild(tmp);
@@ -141,7 +149,7 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
     }
   };
 
-  // open followers/followings (refresh first for fresh counts)
+  // Open followers list (refresh first)
   const handleOpenFollowers = async () => {
     try {
       const res = await fetchProfile(username);
@@ -151,6 +159,8 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
       console.error(err);
     }
   };
+
+  // Open followings list (refresh first)
   const handleOpenFollowings = async () => {
     try {
       const res = await fetchProfile(username);
@@ -204,7 +214,7 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
                 {isFollowing ? "Unfollow" : "Follow"}
               </button>
 
-              {/* Message */}
+              {/* Message (open floating chat and focus/create DM room) */}
               <button
                 onClick={handleMessage}
                 className="px-4 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -310,9 +320,9 @@ export default function ProfileHeader({ profile, username, isMine, posts, setPro
         onClose={() => setShowReportModal(false)}
         target={{
           type: "USER",
-          id: profile?.id ?? null,                 // may be null; modal will resolve by username
+          id: profile?.id ?? null, // may be null; modal will resolve by username
           name: profile?.nickname || `@${username}`,
-          username,                                // used by modal to set targetUsername and resolve id
+          username, // used by modal to set targetUsername and resolve id
         }}
         onSubmitted={() => {
           // optional: refetch or toast

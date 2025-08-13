@@ -1,56 +1,58 @@
+// src/api/axios.js
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
+/** Normalize base URL and append /api prefix once. */
+const RAW_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const BASE = RAW_BASE.replace(/\/+$/, "");        // strip trailing slashes
+const API_PREFIX = "/api";
+const baseURL = `${BASE}${API_PREFIX}`;           // e.g. http://localhost:8080/api
 
-const instance = axios.create({ 
+/** Create a shared axios instance. */
+const instance = axios.create({
   baseURL,
   headers: {
     "Content-Type": "application/json",
   },
+  // withCredentials: true, // enable only if your API uses cookies
 });
 
-// Add a request interceptor to include the token in the headers
+/** Attach bearer token (if present) on every request. */
 instance.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
+    config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
 
-export const apiRequest = async ({ method, url, data, params }) => {
+/** Safely extract the pathname for an axios error (handles relative URLs). */
+const getPathname = (error) => {
   try {
-    const response = await axios({ method, url, data, params });
-    return response.data;
-  } catch (error) {
-    console.error("API request failed:", error);
-    throw error;
+    const cfg = error.config || {};
+    const url = new URL(cfg.url || "", cfg.baseURL || window.location.origin);
+    return url.pathname; // e.g. "/api/auth/me"
+  } catch {
+    return "";
   }
 };
 
-// Error handling for 401 and 403
+/** Global 401/403 handling with ignore list (keep full '/api' paths here). */
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    const requestUrl = error.config?.url || "";
     const currentPath = window.location.pathname;
-
     const isUnauthorized = status === 401;
     const isOnLoginPage = currentPath === "/";
 
-    const ignore401Urls = ["/auth/me"];
+    // Add any endpoints you want to ignore 401 handling for:
+    const ignore401Paths = ["/api/auth/me"];
 
-    let shouldIgnore = false;
-    try {
-      const url = new URL(requestUrl, window.location.origin);
-      const path = url.pathname.replace("/api", "");
-      shouldIgnore = ignore401Urls.some((ignoreUrl) =>
-        path === ignoreUrl || path.startsWith(ignoreUrl)
-      );
-    } catch (e) {
-      console.error("Failed to parse request URL", e);
-    }
+    const pathname = getPathname(error);
+    const shouldIgnore = ignore401Paths.some(
+      (p) => pathname === p || pathname.startsWith(p + "/")
+    );
 
     if (isUnauthorized && !shouldIgnore && !isOnLoginPage) {
       localStorage.removeItem("token");
@@ -62,4 +64,24 @@ instance.interceptors.response.use(
   }
 );
 
+/**
+ * Convenience wrapper that USES the configured instance
+ * so interceptors/baseURL/headers are applied consistently.
+ */
+export const apiRequest = async ({ method, url, data, params }) => {
+  try {
+    const res = await instance.request({ method, url, data, params });
+    return res.data;
+  } catch (error) {
+    console.error("API request failed:", error);
+    throw error;
+  }
+};
+
 export default instance;
+
+/** Optional tiny helpers (if you like) */
+// export const get = (url, params) => apiRequest({ method: "GET", url, params });
+// export const post = (url, data, params) => apiRequest({ method: "POST", url, data, params });
+// export const put = (url, data, params) => apiRequest({ method: "PUT", url, data, params });
+// export const del = (url, params) => apiRequest({ method: "DELETE", url, params });

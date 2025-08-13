@@ -3,8 +3,22 @@ import { Client } from "@stomp/stompjs";
 let stompClient = null;
 let connected = false;
 
+// Helper: HTTP → WS 변환
+const toWebSocketUrl = (httpUrl) => {
+  try {
+    const url = new URL(httpUrl);
+    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    url.pathname = "/ws-chat";
+    return url.toString();
+  } catch (err) {
+    console.error("Invalid API base URL", err);
+    return null;
+  }
+};
+
 export const connectWebSocket = (token, onMessageReceived) => {
-  const socketUrl = `ws://localhost:8080/ws-chat?token=${encodeURIComponent(token)}`;
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+  const socketUrl = `${toWebSocketUrl(apiBaseUrl)}?token=${encodeURIComponent(token)}`;
 
   stompClient = new Client({
     brokerURL: socketUrl,
@@ -14,20 +28,16 @@ export const connectWebSocket = (token, onMessageReceived) => {
     reconnectDelay: 5000,
     onConnect: () => {
       connected = true;
-      
       stompClient.subscribe("/topic/chat.global", (message) => {
         const parsed = JSON.parse(message.body);
         onMessageReceived(parsed);
       });
     },
-    onStompError: (frame) => {      
-    },
+    onStompError: () => {},
     onWebSocketClose: () => {
-      connected = false;      
+      connected = false;
     },
-    debug: (str) => {
-      // console.log(`[STOMP DEBUG] ${str}`);
-    },
+    debug: () => {},
   });
 
   stompClient.activate();
