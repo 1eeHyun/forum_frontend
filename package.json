@@ -20,6 +20,7 @@
     "date-fns-tz": "^3.2.0",
     "emoji-picker-react": "^4.12.2",
     "focus-trap-react": "^11.0.4",
+    "heic2any": "^0.0.4",
     "lucide-react": "^0.510.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
