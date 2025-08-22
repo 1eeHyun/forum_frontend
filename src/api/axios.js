@@ -23,6 +23,12 @@ instance.interceptors.request.use((config) => {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+ if (config.data instanceof FormData) {
+    if (config.headers && "Content-Type" in config.headers) {
+      delete config.headers["Content-Type"];
+    }
+  }
   return config;
 });
 

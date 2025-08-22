@@ -51,16 +51,7 @@ export const uploadMedia = async (file) => {
 
   const { method, url } = POSTS.UPLOAD_FILE;
 
-  const res = await axios({
-    method,
-    url,
-    data: formData,
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  return res;
+  return axios({ method, url, data: formData });
 };
 
 /**
